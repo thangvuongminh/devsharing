@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+  <changeSet id="20260305-001" author="thang-anonymous">
+    <createTable tableName="user">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="username" type="VARCHAR(50)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="email" type="VARCHAR(150)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="password" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="firstname" type="VARCHAR(50)"/>
+      <column name="lastname" type="VARCHAR(50)"/>
+      <column name="phone_number" type="VARCHAR(20)"/>
+      <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="created_by" type="BIGINT"/>
+      <column name="updated_by" type="BIGINT"/>
+    </createTable>
+
+    <createTable tableName="role">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="role_name" type="VARCHAR(50)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="description" type="VARCHAR(255)"/>
+    </createTable>
+
+    <createTable tableName="user_role">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_user_role_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="role_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_user_role_role" referencedTableName="role" referencedColumnNames="id"/>
+      </column>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="user_profile">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" unique="true" foreignKeyName="fk_profile_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="birthdate" type="DATE"/>
+      <column name="gender" type="VARCHAR(10)"/>
+      <column name="address" type="VARCHAR(255)"/>
+      <column name="bio" type="TEXT"/>
+      <column name="avatar" type="VARCHAR(255)"/>
+      <column name="company" type="VARCHAR(100)"/>
+      <column name="year_experience" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="education_level" type="VARCHAR(100)"/>
+      <column name="facebook" type="VARCHAR(255)"/>
+      <column name="personal_website" type="VARCHAR(255)"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="user_skill">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="profile_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_skill_profile" referencedTableName="user_profile" referencedColumnNames="id"/>
+      </column>
+      <column name="skill_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="proficiency_level" type="VARCHAR(50)"/>
+      <column name="year_of_experience" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="category">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="TEXT"/>
+      <column name="slug" type="VARCHAR(150)">
+        <constraints nullable="false" unique="true"/>
+      </column>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="content">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="category_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_content_category" referencedTableName="category" referencedColumnNames="id"/>
+      </column>
+      <column name="creator_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_content_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="title" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="TEXT"/>
+      <column name="status" type="VARCHAR(20)" defaultValue="DRAFT"/>
+      <column name="level" type="VARCHAR(20)"/>
+      <column name="price" type="DECIMAL(19,2)" defaultValueNumeric="0.00"/>
+      <column name="view_count" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="purchase_count" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="published_at" type="TIMESTAMP"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="block">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="content_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_block_content" referencedTableName="content" referencedColumnNames="id"/>
+      </column>
+      <column name="parent_block_id" type="BIGINT">
+        <constraints foreignKeyName="fk_block_parent" referencedTableName="block" referencedColumnNames="id"/>
+      </column>
+      <column name="type" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="text_content" type="TEXT"/>
+      <column name="properties" type="JSON"/>
+      <column name="position" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="is_free" type="BOOLEAN" defaultValueBoolean="false"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="content_review">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="content_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_review_content_main" referencedTableName="content" referencedColumnNames="id"/>
+      </column>
+      <column name="moderator_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_review_moderator" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="action" type="VARCHAR(50)"/>
+      <column name="feedback" type="TEXT"/>
+      <column name="action_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="rating">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="content_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_rating_content" referencedTableName="content" referencedColumnNames="id"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_rating_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="rating_value" type="BIGINT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="review">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="rating_id" type="BIGINT">
+        <constraints foreignKeyName="fk_review_rating" referencedTableName="rating" referencedColumnNames="id"/>
+      </column>
+      <column name="content_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_review_content" referencedTableName="content" referencedColumnNames="id"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_review_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="title" type="VARCHAR(255)"/>
+      <column name="content" type="TEXT"/>
+      <column name="is_verified_purchase" type="BOOLEAN" defaultValueBoolean="false"/>
+      <column name="helpful_count" type="INT" defaultValueNumeric="0"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="wallet">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" unique="true" foreignKeyName="fk_wallet_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="balance" type="DECIMAL(19,2)" defaultValueNumeric="0.00"/>
+      <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="transaction">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_trans_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="type" type="VARCHAR(50)"/>
+      <column name="amount" type="DECIMAL(19,2)"/>
+      <column name="balance_before" type="DECIMAL(19,2)"/>
+      <column name="balance_after" type="DECIMAL(19,2)"/>
+      <column name="description" type="TEXT"/>
+      <column name="reference_id" type="BIGINT"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="purchase">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="content_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_purchase_content" referencedTableName="content" referencedColumnNames="id"/>
+      </column>
+      <column name="consumer_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_purchase_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="transaction_id" type="BIGINT">
+        <constraints foreignKeyName="fk_purchase_trans" referencedTableName="transaction" referencedColumnNames="id"/>
+      </column>
+      <column name="price" type="DECIMAL(19,2)"/>
+      <column name="purchased_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+
+    <createTable tableName="withdrawal_request">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_withdraw_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="amount" type="DECIMAL(19,2)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
+      <column name="bank_account_number" type="VARCHAR(50)"/>
+      <column name="bank_name" type="VARCHAR(100)"/>
+      <column name="account_holder_name" type="VARCHAR(100)"/>
+      <column name="note" type="TEXT"/>
+      <column name="admin_note" type="TEXT"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="reviewed_by" type="BIGINT">
+        <constraints foreignKeyName="fk_withdraw_admin" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="reviewed_at" type="TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>
