@@ -2,19 +2,29 @@ package com.studyhard.application.controller;
 
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
+import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
 import com.studyhard.application.response.ApiResponse;
 import com.studyhard.application.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -34,10 +44,33 @@ public class UserAccountController {
   }
   @PostMapping("/login")
   @Operation(summary = "User login", description = "Authenticates a user using email and password credentials." )
-  public ResponseEntity<ApiResponse<Void>> loginUser(
-       @RequestBody UserLoginRequest request
+  public ResponseEntity<ApiResponse<UserLoginResponse>> loginUser(
+       @RequestBody UserLoginRequest request, HttpServletResponse response
   ) {
-    userAccountService.loginUser(request);
-    return ResponseEntity.ok(ApiResponse.success(null)) ;
+    UserLoginResponse userLoginResponse= userAccountService.loginUser(request);
+    ResponseCookie resCookie = ResponseCookie.from("studyHard", userLoginResponse.getRefreshToken())
+        .httpOnly(true)
+        .secure(false)
+        .path("/")
+        .build();
+    response.addHeader("Set-Cookie", resCookie.toString());
+    return ResponseEntity.ok(ApiResponse.success(userLoginResponse)) ;
+  }
+  @PutMapping("/logout")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse<Void>> logoutUser(HttpServletResponse response) {
+    userAccountService.logoutUser(response);
+    return ResponseEntity.ok().body(ApiResponse.success(null)) ;
+  }
+  @GetMapping("/refreshToken")
+  public ResponseEntity<ApiResponse<UserLoginResponse>> refreshToken(HttpServletRequest request) {
+    UserLoginResponse response=  userAccountService.refreshToken(request);
+    return ResponseEntity.ok().body(ApiResponse.success(response)) ;
+  }
+  @GetMapping("/forgot-password")
+
+  public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam String email) {
+    userAccountService.forgotPassword(email);
+    return ResponseEntity.ok().body(ApiResponse.success("Send email successfully!")) ;
   }
 }

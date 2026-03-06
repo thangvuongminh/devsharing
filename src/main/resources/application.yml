@@ -8,8 +8,25 @@ spring:
     password: root
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://localhost:3306/study-hard
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    username: chaudiensdk5@gmail.com
+    password: qylk wodv lcfw ifnh
 server:
   port: 8090
 jwt:
   credentials:
     secretKey: cd1a4405ed4c987cde177f55c62ba23e085337259e7b659b792a8447a0b28985a36496137ea82f5f017d9da29f7ba5d9eaa67f82a6b91c30bd5a45a153b29cd7
+    timeLiveAccessToken: 3600
+    timeLiveRefreshToken: 108300

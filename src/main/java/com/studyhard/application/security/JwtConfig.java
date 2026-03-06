@@ -1,5 +1,8 @@
 package com.studyhard.application.security;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import com.studyhard.application.config.properties.JwtProperties;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +20,9 @@ import org.springframework.security.crypto.password.Md4PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
@@ -31,6 +36,14 @@ public class JwtConfig {
   public SecretKey secretKey() {
     byte[] bytes = jwtProperties.getSecretKey().getBytes();
     return new SecretKeySpec(bytes,macAlgorithm.getName());
+  }
+  @Bean
+  public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+    return  new NimbusJwtEncoder(jwkSource);
+  }
+  @Bean
+  public JWKSource<SecurityContext> jwkSource(SecretKey secretKey) {
+    return new ImmutableSecret<>(secretKey);
   }
   @Bean
   public JwtDecoder jwtDecoder() {

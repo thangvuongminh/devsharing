@@ -14,4 +14,6 @@ import org.springframework.context.annotation.Configuration;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class JwtProperties {
   String secretKey;
+  Long timeLiveAccessToken;
+  Long timeLiveRefreshToken;
 }
