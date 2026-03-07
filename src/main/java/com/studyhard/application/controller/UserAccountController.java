@@ -1,5 +1,8 @@
 package com.studyhard.application.controller;
 
+import com.studyhard.application.dto.request.ChangePasswordRequest;
+import com.studyhard.application.dto.request.ForgotPasswordRequest;
+import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
@@ -33,44 +36,66 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "User account")
 public class UserAccountController {
+
   UserAccountService userAccountService;
+
   @PostMapping("/register")
-  @Operation(summary = "Register a new user", description = "Creates a new user account in the system." )
+  @Operation(summary = "Register a new user", description = "Creates a new user account in the system.")
   public ResponseEntity<ApiResponse<UserRegistrationResponse>> registerUser(
-    @Valid @RequestBody UserRegisterRequest request
+      @Valid @RequestBody UserRegisterRequest request
   ) {
-     UserRegistrationResponse response= userAccountService.registerUser(request);
-    return ResponseEntity.ok(ApiResponse.success(response)) ;
+    UserRegistrationResponse response = userAccountService.registerUser(request);
+    return ResponseEntity.ok(ApiResponse.success(response));
   }
+
   @PostMapping("/login")
-  @Operation(summary = "User login", description = "Authenticates a user using email and password credentials." )
+  @Operation(summary = "User login", description = "Authenticates a user using email and password credentials.")
   public ResponseEntity<ApiResponse<UserLoginResponse>> loginUser(
-       @RequestBody UserLoginRequest request, HttpServletResponse response
+      @RequestBody UserLoginRequest request, HttpServletResponse response
   ) {
-    UserLoginResponse userLoginResponse= userAccountService.loginUser(request);
+    UserLoginResponse userLoginResponse = userAccountService.loginUser(request);
     ResponseCookie resCookie = ResponseCookie.from("studyHard", userLoginResponse.getRefreshToken())
         .httpOnly(true)
         .secure(false)
         .path("/")
         .build();
     response.addHeader("Set-Cookie", resCookie.toString());
-    return ResponseEntity.ok(ApiResponse.success(userLoginResponse)) ;
+    return ResponseEntity.ok(ApiResponse.success(userLoginResponse));
   }
+
   @PutMapping("/logout")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<Void>> logoutUser(HttpServletResponse response) {
     userAccountService.logoutUser(response);
-    return ResponseEntity.ok().body(ApiResponse.success(null)) ;
+    return ResponseEntity.ok().body(ApiResponse.success(null));
   }
+
   @GetMapping("/refreshToken")
   public ResponseEntity<ApiResponse<UserLoginResponse>> refreshToken(HttpServletRequest request) {
-    UserLoginResponse response=  userAccountService.refreshToken(request);
-    return ResponseEntity.ok().body(ApiResponse.success(response)) ;
+    UserLoginResponse response = userAccountService.refreshToken(request);
+    return ResponseEntity.ok().body(ApiResponse.success(response));
   }
-  @GetMapping("/forgot-password")
 
-  public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam String email) {
-    userAccountService.forgotPassword(email);
-    return ResponseEntity.ok().body(ApiResponse.success("Send email successfully!")) ;
+  @PostMapping("/forgot-password")
+  public ResponseEntity<ApiResponse<String>> forgotPassword(
+      @RequestBody ForgotPasswordRequest request) {
+    userAccountService.forgotPassword(request.getEmail());
+    return ResponseEntity.ok().body(ApiResponse.success("Send email successfully!"));
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<ApiResponse<String>> resetPassword(
+      @RequestBody ResetPasswordRequest request) {
+    userAccountService.resetPassword(request);
+    return ResponseEntity.ok().body(ApiResponse.success("reset password successfully!"));
+  }
+
+  @PostMapping("/change-password")
+  @PreAuthorize("isAuthenticated()")
+  public ResponseEntity<ApiResponse<String>> changePassword(
+      @RequestBody ChangePasswordRequest request
+  ){
+    userAccountService.changePassword(request);
+    return ResponseEntity.ok().body(ApiResponse.success("change password successfully!"));
   }
 }

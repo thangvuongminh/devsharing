@@ -1,5 +1,7 @@
 package com.studyhard.application.service;
 
+import com.studyhard.application.dto.request.ChangePasswordRequest;
+import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
@@ -21,4 +23,8 @@ public interface UserAccountService {
   public UserLoginResponse refreshToken(HttpServletRequest request);
 
   public void forgotPassword(String email);
+
+  public  void resetPassword(ResetPasswordRequest resetPasswordRequest);
+
+  public void changePassword(ChangePasswordRequest changePasswordRequest);
 }

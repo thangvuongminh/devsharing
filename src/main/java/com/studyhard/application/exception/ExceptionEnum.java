@@ -11,8 +11,11 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionEnum implements StudyHardExceptionInfo {
   REFRESH_TOKEN_MISSING("REFRESH_TOKEN_MISSING", "Refresh token is required to access this resource.",HttpStatus.UNAUTHORIZED),
   INVALID_TOKEN("INVALID_TOKEN", "Invalid token provided.",HttpStatus.UNAUTHORIZED),
+  INVALID_OTP("INVALID_OTP", "Invalid or expired OTP.",HttpStatus.BAD_REQUEST),
   USERNAME_NOT_FOUND("USERNAME_NOT_FOUND","Username not found. Please check your input or create a new account.",HttpStatus.BAD_REQUEST),
   USERNAME_ALREADY_EXISTS("USERNAME_EXISTS","The username you entered is already in use. Please try a different one.",HttpStatus.BAD_REQUEST),
+  EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS","The email you entered is already in use. Please try a different one.",HttpStatus.BAD_REQUEST),
+  PASSWORD_NOT_MATCH("PASSWORD_NOT_MATCH", "Passwords do not match. Please try again.", HttpStatus.BAD_REQUEST),
   ;
   String errorCode;
   String errorMessage;

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,5 +34,13 @@ public class GlobalHandlerException {
       errors.put(error.getField(), error.getDefaultMessage());
     });
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.success(errors));
+  }
+  @ExceptionHandler(BadCredentialsException.class)
+  public ResponseEntity<ApiResponse<?>> handleBadCredentialsException(BadCredentialsException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("Username or password not match","Bad credentials!"));
+  }
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  public ResponseEntity<ApiResponse<?>> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(null,"UNAUTHORIZED"));
   }
 }

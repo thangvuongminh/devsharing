@@ -1,5 +1,7 @@
 package com.studyhard.application.service.impl;
 
+import com.studyhard.application.dto.request.ChangePasswordRequest;
+import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
@@ -21,6 +23,7 @@ import com.studyhard.application.repository.UserVerificationRepository;
 import com.studyhard.application.service.NotificationService;
 import com.studyhard.application.service.UserAccountService;
 import com.studyhard.application.utils.GenerateToken;
+import com.studyhard.application.utils.RandomOtp;
 import com.studyhard.application.utils.TokenType;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -70,11 +73,13 @@ public class UserAccountServiceImpl implements UserAccountService {
   GenerateToken generateToken;
   RedisTemplate<String, Object> redisTemplate;
   JwtDecoder jwtDecoder;
+  RandomOtp randomOtp;
   @Override
   @Transactional
   public UserRegistrationResponse registerUser(UserRegisterRequest request) {
     Role role = getRoleConsumer();
     checkUserExists(request.getUsername());
+    checkEmailExists(request.getEmail());
     User user = saveUserFromUserRegisterDto(request);
     saveUserRoleFromUserRegisterDto(role, user);
     sendEmailVerification(user);
@@ -152,7 +157,57 @@ public class UserAccountServiceImpl implements UserAccountService {
 
   @Override
   public void forgotPassword(String email) {
-    notificationService.sendEmail(email);
+    User user = userRepository.findByEmail(email);
+    if(user==null){
+      throw new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND);
+    }
+    String otpCode=String.valueOf(randomOtp.generateOtp());
+    String subject = "StudyHard Yêu cầu khôi phục mật khẩu";
+    String msgBody = """
+    Chào bạn,
+    
+    Bạn vừa gửi yêu cầu khôi phục mật khẩu. Vui lòng sử dụng mã xác minh dưới đây:
+    
+    Mã OTP của bạn là:  %s
+    
+    (Mã này có hiệu lực trong 5 phút . Tuyệt đối không chia sẻ mã này cho bất kỳ ai).
+    
+    Nếu không phải bạn thực hiện yêu cầu này, hãy đổi mật khẩu ngay lập tức hoặc liên hệ hỗ trợ.
+    """.formatted(otpCode);
+    notificationService.sendEmail(subject,msgBody,email);
+    redisTemplate.opsForValue().set(email,otpCode, Duration.ofSeconds(300));
+  }
+
+  @Override
+  public void resetPassword(ResetPasswordRequest request) {
+    User user = userRepository.findByEmail(request.getEmail());
+    if(user==null){
+      throw new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND);
+    }
+    String otp =(String) redisTemplate.opsForValue().get(request.getEmail());
+    if (otp==null){
+      throw new StudyHardException(ExceptionEnum.INVALID_OTP);
+    }
+    if (otp.equals(request.getOtp())){
+      user.setPassword(passwordEncoder.encode(request.getPassword()));
+      redisTemplate.delete(request.getEmail());
+      userRepository.save(user);
+    }else  {
+      throw new StudyHardException(ExceptionEnum.INVALID_OTP);
+    }
+  }
+
+  @Override
+  public void changePassword(ChangePasswordRequest changePasswordRequest) {
+     JwtAuthenticationToken authentication=(JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+     Long userId=(Long) authentication.getToken().getClaims().get("userId");
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
+    if(passwordEncoder.matches(changePasswordRequest.getPassword(),user.getPassword())){
+      user.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword()));
+    }else {
+      throw new StudyHardException(ExceptionEnum.PASSWORD_NOT_MATCH);
+    }
   }
 
   public void sendEmailVerification(User user) {
@@ -185,6 +240,12 @@ public class UserAccountServiceImpl implements UserAccountService {
     var user = userRepository.findByUserName(username);
     if (user.isPresent()) {
       throw new StudyHardException(ExceptionEnum.USERNAME_ALREADY_EXISTS);
+    }
+  }
+  public  void checkEmailExists(String email) {
+    var user = userRepository.findByEmail(email);
+    if (user!=null){
+      throw new StudyHardException(ExceptionEnum.EMAIL_ALREADY_EXISTS);
     }
   }
 
