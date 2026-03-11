@@ -55,6 +55,7 @@ public class SecurityConfig {
                 .permitAll()
                 // user account
                 .requestMatchers("user/account/**").permitAll()
+                .requestMatchers("chat/**").permitAll()
                 .anyRequest().authenticated())
         .oauth2ResourceServer(oauth2->oauth2.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)))
         .addFilterAfter(new CustomFilter(redisTemplate),BearerTokenAuthenticationFilter.class)

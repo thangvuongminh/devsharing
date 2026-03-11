@@ -1,5 +1,7 @@
 package com.studyhard.application.config;
 
+import java.sql.SQLException;
+import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -8,6 +10,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class RedisConfig {
@@ -31,5 +35,10 @@ public class RedisConfig {
             RedisSerializationContext.SerializationPair
 
                 .fromSerializer(new GenericJackson2JsonRedisSerializer()));
+  }
+  @Bean
+  public PlatformTransactionManager transactionManager(DataSource dataSource) throws SQLException {
+    return   new DataSourceTransactionManager(dataSource);
+
   }
 }

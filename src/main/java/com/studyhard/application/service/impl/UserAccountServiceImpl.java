@@ -25,6 +25,7 @@ import com.studyhard.application.service.UserAccountService;
 import com.studyhard.application.utils.GenerateToken;
 import com.studyhard.application.utils.RandomOtp;
 import com.studyhard.application.utils.TokenType;
+import com.studyhard.application.utils.UserExtractor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -199,9 +200,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 
   @Override
   public void changePassword(ChangePasswordRequest changePasswordRequest) {
-     JwtAuthenticationToken authentication=(JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-     Long userId=(Long) authentication.getToken().getClaims().get("userId");
-    User user = userRepository.findById(userId)
+    User user = userRepository.findById(UserExtractor.getUserId())
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
     if(passwordEncoder.matches(changePasswordRequest.getPassword(),user.getPassword())){
       user.setPassword(passwordEncoder.encode(changePasswordRequest.getPassword()));

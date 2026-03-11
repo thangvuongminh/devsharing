@@ -16,6 +16,14 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
   USERNAME_ALREADY_EXISTS("USERNAME_EXISTS","The username you entered is already in use. Please try a different one.",HttpStatus.BAD_REQUEST),
   EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS","The email you entered is already in use. Please try a different one.",HttpStatus.BAD_REQUEST),
   PASSWORD_NOT_MATCH("PASSWORD_NOT_MATCH", "Passwords do not match. Please try again.", HttpStatus.BAD_REQUEST),
+
+  // CONTENT_NOT_FOUND
+  CONTENT_NOT_FOUND("CONTENT_NOT_FOUND", "Content not found.", HttpStatus.NOT_FOUND),
+  UNAUTHORIZE_CONTENT_ACCESS("UNAUTHORIZE_CONTENT_ACCESS", "Access Denied. You do not have permission to view this content.", HttpStatus.UNAUTHORIZED),
+  CONTENT_ALREADY_YOUR_CAR("CONTENT_ALREADY_YOUR_CAR", "Content is already in your cart.", HttpStatus.BAD_REQUEST),
+  CONTENT_REVIEW_OR_REJECTION("CONTENT_REVIEW_OR_REJECTION", "The content is either under review or has been rejected.", HttpStatus.BAD_REQUEST),
+  // category
+  CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Requested category does not exist.", HttpStatus.BAD_REQUEST),
   ;
   String errorCode;
   String errorMessage;

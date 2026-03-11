@@ -10,4 +10,7 @@
   <include file="db/changelog/ddl/ddl-0003-modify-table-userverification-verified_at-null.xml"/>
 <!--  init-data-->
   <include file="db/changelog/data/data-0001-data-role.xml"/>
+  <include file="db/changelog/data/data-0002-data-content.xml"/>
+  <include file="db/changelog/data/ddl-0003-chatmemory.xml"/>
+
 </databaseChangeLog>
