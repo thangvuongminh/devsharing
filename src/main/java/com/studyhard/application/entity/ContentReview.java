@@ -44,6 +44,6 @@ public class ContentReview {
   @Column(columnDefinition = "TEXT")
   private String feedback;
 
-  @Column(name = "reviewed_at", nullable = false)
-  private Instant reviewedAt;
+  @Column(name = "actionAt", nullable = false)
+  private Instant actionAt;
 }

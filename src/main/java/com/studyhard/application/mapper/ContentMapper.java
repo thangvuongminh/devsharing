@@ -3,7 +3,9 @@ package com.studyhard.application.mapper;
 
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
+import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Content;
+import com.studyhard.application.entity.ContentReview;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
 
@@ -13,4 +15,5 @@ import org.mapstruct.ReportingPolicy;
 public interface ContentMapper {
   ContentDto toContentDto(Content content);
   ContentSummaryDto toContentSummaryDto(Content content);
+  ContentReviewResponse toContentReviewResponse(ContentReview contentReview);
 }

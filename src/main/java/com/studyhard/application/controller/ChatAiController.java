@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -37,7 +38,9 @@ public class ChatAiController {
     );
     String name = user.getEmail();
     return chatClient.prompt()
-        .user(u -> u.text(defaultTemplateUserResource).param("message", message))
+//        .user(u -> u.text(defaultTemplateUserResource).param("message", message))
+        .advisors(a -> a.param(ChatMemory.CONVERSATION_ID,UserExtractor.getUserId()))
+        .user(message)
         .call().content();
   }
 }

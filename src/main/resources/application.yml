@@ -2,21 +2,13 @@ spring:
   application:
     name: study-hard
   ai:
-    model:
-      chat: google-genai
-    google:
-      genai:
-        api-key: ${GOOGLE_API_KEY}
-        chat:
-          options:
-            model: gemini-2.5-flash
-
-    chat:
-      memory:
-        repository:
-          jdbc:
-            schema:
-              initialize-schema: never
+    openai:
+      chat:
+        base-url: https://generativelanguage.googleapis.com
+        completions-path: v1beta/openai/chat/completions
+        options:
+          model: gemini-2.5-flash
+      api-key:  ${GOOGLE_API_KEY}
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
   datasource:

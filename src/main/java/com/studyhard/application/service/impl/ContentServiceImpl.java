@@ -2,17 +2,22 @@ package com.studyhard.application.service.impl;
 
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
+import com.studyhard.application.dto.request.ContentReviewRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
+import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Category;
 import com.studyhard.application.entity.Content;
+import com.studyhard.application.entity.ContentReview;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mapper.ContentMapper;
 import com.studyhard.application.model.ContentStatus;
+import com.studyhard.application.model.ReviewAction;
 import com.studyhard.application.redis.CartContent;
 import com.studyhard.application.redis.repository.CardContentRepository;
 import com.studyhard.application.repository.CategoryRepository;
 import com.studyhard.application.repository.ContentRepository;
+import com.studyhard.application.repository.ContentReviewRepository;
 import com.studyhard.application.service.CategoryService;
 import com.studyhard.application.service.ContentService;
 import com.studyhard.application.utils.UserExtractor;
@@ -27,6 +32,8 @@ import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +47,7 @@ public class ContentServiceImpl implements ContentService {
   CategoryRepository categoryRepository;
   CategoryService categoryService;
   CardContentRepository cardContentRepository;
+  ContentReviewRepository contentReviewRepository;
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {
@@ -125,5 +133,43 @@ public class ContentServiceImpl implements ContentService {
     content.setStatus(ContentStatus.REJECTED);
     contentRepository.save(content);
     return contentMapper.toContentSummaryDto(content);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<ContentSummaryDto> getAllContentPendingReview(Pageable pageable) {
+    Page<Content> contentPage=contentRepository.findByStatus(ContentStatus.PENDING_REVIEW, pageable);
+    return contentPage.map(contentMapper::toContentSummaryDto);
+  }
+
+  @Override
+  @Transactional
+  public ContentReviewResponse reviewContent(ContentReviewRequest request) {
+    Content content = contentRepository.findById(request.getContentId()).orElseThrow(
+        () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
+    );
+    ContentReview contentReview= ContentReview.builder()
+        .content(content)
+        .moderatorId(UserExtractor.getUserId())
+        .feedback(request.getAdminNote())
+        .action(request.getReviewAction())
+        .actionAt(Instant.now())
+        .build();
+    contentReviewRepository.save(contentReview);
+    return contentMapper.toContentReviewResponse(contentReview);
+  }
+
+  @Override
+  @Transactional
+  public void publishContent(String contentId) {
+    Long contentIdLong=Long.parseLong(contentId);
+    Content content = contentRepository.findById(contentIdLong).orElseThrow(
+        () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
+    );
+    if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+      throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
+    }
+    content.setStatus(ContentStatus.PUBLISHED);
+    contentRepository.save(content);
   }
 }

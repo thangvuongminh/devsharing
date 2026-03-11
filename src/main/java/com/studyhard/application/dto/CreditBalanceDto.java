@@ -1,7 +1,6 @@
 package com.studyhard.application.dto;
 
-import com.studyhard.application.dto.request.ContentPreviewRequest;
-import com.studyhard.application.model.ContentStatus;
+import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,11 +11,11 @@ import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
-public class ContentPreviewDto {
-  ContentStatus contentStatus;
-  ContentPreviewRequest contentPreviewRequest;
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class CreditBalanceDto {
+  Long userId;
+  BigDecimal balance;
 }

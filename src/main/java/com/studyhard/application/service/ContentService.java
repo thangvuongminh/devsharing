@@ -2,10 +2,13 @@ package com.studyhard.application.service;
 
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
+import com.studyhard.application.dto.request.ContentReviewRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
+import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Content;
 import java.util.List;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ContentService {
 
@@ -19,6 +22,12 @@ public interface ContentService {
   public List<ContentSummaryDto> getAllCard();
 
   public ContentSummaryDto submitReviewContent(String contentId);
+
+  public Page<ContentSummaryDto> getAllContentPendingReview(Pageable pageable);
+
+  public ContentReviewResponse reviewContent(ContentReviewRequest request);
+
+  public void publishContent(String contentId);
 //  public Content getContentById(Long id);
 //
 //  public Content updateContent(Long id, UpdateContentRequest updateContentRequest);
