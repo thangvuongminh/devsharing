@@ -3,6 +3,7 @@ package com.studyhard.application.controller;
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
 import com.studyhard.application.dto.request.ContentReviewRequest;
+import com.studyhard.application.dto.request.ContentSearchRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
 import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Content;
@@ -102,5 +103,11 @@ public class ContentController {
     contentService.publishContent(contentId);
     return ResponseEntity.ok().body(ApiResponse.success(null));
   }
-
+  @GetMapping("/{contentId}/search")
+  @Operation(summary = "SEARCH CONTENT")
+  @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
+  public ResponseEntity<ApiResponse<Void>> searchContentAnyUser(@RequestBody ContentSearchRequest contentSearchRequest  ) {
+    contentService.searchContentAnyUsers(contentSearchRequest);
+    return ResponseEntity.ok().body(ApiResponse.success(null));
+  }
 }

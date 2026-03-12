@@ -3,6 +3,7 @@ package com.studyhard.application.service;
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
 import com.studyhard.application.dto.request.ContentReviewRequest;
+import com.studyhard.application.dto.request.ContentSearchRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
 import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Content;
@@ -36,7 +37,7 @@ public interface ContentService {
 //
 //  // search and filter pagination
 //  public Page<Content> searchContentByAuthor(ContentSearchRequest contentSearchRequest);
-//  public Page<Content> searchContentAnyUsers(ContentSearchRequest contentSearchRequest);
+  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest);
 //
 //  // content management
 //  public Content publishContent(Long contentId) ;

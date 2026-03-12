@@ -3,6 +3,7 @@ package com.studyhard.application.service.impl;
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
 import com.studyhard.application.dto.request.ContentReviewRequest;
+import com.studyhard.application.dto.request.ContentSearchRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
 import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Category;
@@ -171,5 +172,12 @@ public class ContentServiceImpl implements ContentService {
     }
     content.setStatus(ContentStatus.PUBLISHED);
     contentRepository.save(content);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest) {
+
+    return null;
   }
 }
