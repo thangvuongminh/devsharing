@@ -8,13 +8,13 @@ import org.hibernate.validator.constraints.Length;
 
 import java.time.Instant;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
 public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

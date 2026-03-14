@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
 @Entity
 @Setter
 @NoArgsConstructor
@@ -35,7 +34,7 @@ public class Content {
   ContentStatus status;
   @Enumerated(EnumType.STRING)
   ContentLevel level;
-  @Column(precision = 10, scale = 2)
+  @Column(precision = 19, scale = 2)
   BigDecimal price;
   @Column(name = "view_count")
   Long viewCount=0L;

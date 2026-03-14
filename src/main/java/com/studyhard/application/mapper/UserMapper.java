@@ -1,6 +1,7 @@
 package com.studyhard.application.mapper;
 
 import com.studyhard.application.dto.request.UserRegisterRequest;
+import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
 import com.studyhard.application.entity.User;
 import org.mapstruct.Mapper;

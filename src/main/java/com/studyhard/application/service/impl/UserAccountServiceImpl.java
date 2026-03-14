@@ -6,6 +6,7 @@ import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
+import com.studyhard.application.entity.GoogleUserResponse;
 import com.studyhard.application.entity.Role;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.UserRole;
@@ -44,6 +45,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -57,6 +59,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 @Service
 @RequiredArgsConstructor
@@ -207,6 +210,50 @@ public class UserAccountServiceImpl implements UserAccountService {
     }else {
       throw new StudyHardException(ExceptionEnum.PASSWORD_NOT_MATCH);
     }
+  }
+
+  @Override
+  @Transactional
+  public UserLoginResponse loginByGoogle(String accessTokenGoogle) {
+    RestClient restClient=RestClient.builder()
+        .baseUrl("https://www.googleapis.com/oauth2/v1/userinfo")
+        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessTokenGoogle)
+        .build();
+    GoogleUserResponse googleUserResponse =restClient.get().retrieve().body(GoogleUserResponse.class);
+    User user = userRepository.findByEmail(googleUserResponse.getEmail());
+    Role role= getRoleConsumer();
+    if(user==null){
+
+      user = User.builder()
+          .status(UserStatus.ACTIVE)
+          .email(googleUserResponse.getEmail())
+          .firstName(googleUserResponse.getGiven_name())
+          .lastName(googleUserResponse.getFamily_name())
+          .createAt(Instant.now())
+          .createBy(0)
+          .updateAt(Instant.now())
+          .updateBy(0)
+          .build();
+      userRepository.save(user);
+      UserRole userRole=UserRole.builder()
+          .user(user)
+          .role(role)
+          .createAt(Instant.now())
+          .updateAt(Instant.now())
+          .build();
+      userRoleRepository.save(userRole);
+    }
+    List<UserRole> userRole = userRoleRepository.findByUser(user);
+    String[] roles = userRole.stream().map(userRole1 ->
+        userRole1.getRole().getRoleName().name()
+    ).toArray(String[]::new);
+    String accessToken = generateToken.createToken(user.getId(), TokenType.ACCESS_TOKEN, roles);
+    String refreshToken = generateToken.createToken(user.getId(), TokenType.REFRESH_TOKEN, roles);
+
+    return  UserLoginResponse.builder()
+        .accessToken(accessToken)
+        .userId(user.getId())
+        .build();
   }
 
   public void sendEmailVerification(User user) {

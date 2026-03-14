@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+  <changeSet id="20260313-005" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="add-ticket-message"/>
+      </not>
+    </preConditions>
+    <createTable tableName="add-ticket-message">
+      <column name="id" type="bigint">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="userId" type="bigint">
+        <constraints foreignKeyName="fk_support_ticket_message_userid" referencedTableName="user" referencedColumnNames="id" />
+      </column>
+      <column name="message" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="support_ticket" type="bigint">
+        <constraints foreignKeyName="fk_support_ticket_message" referencedTableName="support_ticket" referencedColumnNames="id" />
+      </column>
+      <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP" />
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>

@@ -9,6 +9,20 @@ spring:
         options:
           model: gemini-2.5-flash
       api-key:  ${GOOGLE_API_KEY}
+      embedding:
+        options:
+          model: gemini-embedding-001
+        base-url: https://generativelanguage.googleapis.com
+        api-key: ${GOOGLE_API_KEY}
+        embeddings-path: v1beta/openai/embeddings
+
+    vectorstore:
+      qdrant:
+        collection-name: study-hard
+        port: 6334
+        initialize-schema: true
+        host: localhost
+        api-key: ${GOOGLE_API_KEY}
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
   datasource:
@@ -31,6 +45,9 @@ spring:
             enable: true
     username: chaudiensdk5@gmail.com
     password: qylk wodv lcfw ifnh
+  jpa:
+    hibernate:
+      ddl-auto: update
 
 server:
   port: 8090
@@ -47,3 +64,18 @@ logging:
           chat:
             client:
               advisor: DEBUG
+qdrant:
+  init-data: false
+openapi:
+  oauth2:
+    basic-auth:
+      authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
+      tokenUrl: https://oauth2.googleapis.com/token
+springdoc:
+  swagger-ui:
+    oauth:
+      use-basic-authentication-with-access-code-grant: true
+      client-id: 73964980113-nifujb8sqn1219jul7padl4h8kf0f2go.apps.googleusercontent.com
+      client-secret: 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
+      scopes:
+    oauth2-redirect-url: http://localhost:8090/swagger-ui/oauth2-redirect.html

@@ -6,7 +6,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +13,7 @@ import java.time.Instant;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "user_role")
 @Builder
+@Entity
 public class UserRole {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Id

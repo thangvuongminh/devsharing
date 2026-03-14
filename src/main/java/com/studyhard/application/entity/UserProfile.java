@@ -7,15 +7,6 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
 
-
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)

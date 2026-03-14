@@ -27,4 +27,6 @@ public interface UserAccountService {
   public  void resetPassword(ResetPasswordRequest resetPasswordRequest);
 
   public void changePassword(ChangePasswordRequest changePasswordRequest);
+
+  public  UserLoginResponse loginByGoogle(String accessToken);
 }
