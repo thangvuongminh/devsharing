@@ -1,0 +1,14 @@
+# Xóa sạch khoảng trắng sau dấu = và nối liền mật khẩu ứng dụng nhé!
+MAIL_USERNAME=chaudiensdk5@gmail.com
+MAIL_PASSWORD=qylkwodvlcfwifnh
+
+JWT_SECRET_KEY=cd1a4405ed4c987cde177f55c62ba23e085337259e7b659b792a8447a0b28985a36496137ea82f5f017d9da29f7ba5d9eaa67f82a6b91c30bd5a45a153b29cd7
+
+GOOGLE_CLIENT_ID=73964980113-nifujb8sqn1219jul7padl4h8kf0f2go.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+EMAIL_ACCESS_SWAGGER=chaudiensdk5@gmail.com
+PASSWORD_ACCESS_SWAGGER=123456
+EMAIL_ACCESS_SWAGGER_2=032018giahuy@gmail.com
+PASSWORD_ACCESS_SWAGGER_2==^850C#6zz&
+EMAIL_ACCESS_SWAGGER_3=binpro015@gmail.com
+PASSWORD_ACCESS_SWAGGER_3=#O292E{}bzZ

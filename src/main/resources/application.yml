@@ -1,21 +1,12 @@
 spring:
   application:
     name: study-hard
-  ai:
-    openai:
-      api-key: ${OPEN_API_KEY}
-    vectorstore:
-      qdrant:
-        collection-name: study-hard
-        port: 6334
-        initialize-schema: true
-        host: localhost
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
   datasource:
     username: root
     password: root
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/study-hard
   data:
     redis:
@@ -30,8 +21,8 @@ spring:
           auth: true
           starttls:
             enable: true
-    username: chaudiensdk5@gmail.com
-    password: qylk wodv lcfw ifnh
+    username: ${MAIL_USERNAME}
+    password:  ${MAIL_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -40,7 +31,7 @@ server:
   port: 8090
 jwt:
   credentials:
-    secretKey: cd1a4405ed4c987cde177f55c62ba23e085337259e7b659b792a8447a0b28985a36496137ea82f5f017d9da29f7ba5d9eaa67f82a6b91c30bd5a45a153b29cd7
+    secretKey: ${JWT_SECRET_KEY}
     timeLiveAccessToken: 3600
     timeLiveRefreshToken: 108300
 logging:
@@ -62,7 +53,17 @@ springdoc:
   swagger-ui:
     oauth:
       use-basic-authentication-with-access-code-grant: true
-      client-id: 73964980113-nifujb8sqn1219jul7padl4h8kf0f2go.apps.googleusercontent.com
-      client-secret: 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
+      client-id: ${GOOGLE_CLIENT_ID}
+      client-secret: ${GOOGLE_CLIENT_SECRET}
       scopes:
     oauth2-redirect-url: http://localhost:8090/swagger-ui/oauth2-redirect.html
+swagger:
+  credentials:
+    basic-auth:
+        accounts:
+          - email: ${EMAIL_ACCESS_SWAGGER}
+            password: ${PASSWORD_ACCESS_SWAGGER}
+          - email: ${EMAIL_ACCESS_SWAGGER_2}
+            password: ${PASSWORD_ACCESS_SWAGGER_2}
+          - email: ${EMAIL_ACCESS_SWAGGER_3}
+            password: ${PASSWORD_ACCESS_SWAGGER_3}

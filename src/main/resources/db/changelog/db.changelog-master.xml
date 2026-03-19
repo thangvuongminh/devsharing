@@ -6,18 +6,8 @@
 
   <!--  init table-->
   <include file="db/changelog/ddl/ddl-0001-init-table.xml"/>
-  <include file="db/changelog/ddl/ddl-0002-add-table-user-verification.xml"/>
-  <include file="db/changelog/ddl/ddl-0003-modify-table-userverification-verified_at-null.xml"/>
-  <include file="db/changelog/ddl/ddl-0004-add-table-support-ticket.xml"/>
-  <include file="db/changelog/ddl/ddl-0005-add-ticket-message.xml"/>
-  <include file="/db/changelog/ddl/ddl-0006-dropForeignKeyConstraint-ticketMessage.xml"/>
-  <include file="/db/changelog/ddl/ddl-00007-dropForeignKeyConstrant-ticketMessage.xml"/>
-  <include file="/db/changelog/ddl/ddl-0008-modify-column-support-ticket.xml"/>
-  <include file="/db/changelog/ddl/ddl-0009-delete-userId-supportTicket.xml"/>
-  <include file="db/changelog/ddl/ddl-0010-add-foreignkey-support.ticket.xml"/>
+
 <!--  init-data-->
-  <include file="db/changelog/data/data-0001-data-role.xml"/>
-  <include file="db/changelog/data/data-0002-data-content.xml"/>
-  <include file="db/changelog/data/ddl-0003-chatmemory.xml"/>
+  <include file="/db/changelog/data/data-0001-data.xml"/>
 
 </databaseChangeLog>

@@ -1,7 +1,10 @@
 package com.studyhard.application.security;
 
 import com.studyhard.application.config.StudyHardUserDetailService;
+import com.studyhard.application.config.properties.SwaggerAccountAccess;
+import com.studyhard.application.service.NotificationService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -9,10 +12,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -20,8 +25,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -46,9 +53,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   RedisTemplate<String, Object> redisTemplate;
-
+  SwaggerAccountAccess swaggerAccountAccess;
   @Bean
-  @Order(2)
+  @Order(3)
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
@@ -69,7 +76,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  @Order(1)
+  @Order(2)
   public SecurityFilterChain securityFilterChainGoogle(HttpSecurity http
   ) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)
@@ -86,6 +93,34 @@ public class SecurityConfig {
             );
     return http.build();
   }
+
+  @Bean
+  @Order(Ordered.HIGHEST_PRECEDENCE)
+  public SecurityFilterChain securityFilterChainSwagger(HttpSecurity http
+  ) throws Exception {
+    http.csrf(AbstractHttpConfigurer::disable)
+        .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()));
+    http.securityMatcher(  "v3/api-docs/**")
+        .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
+        .httpBasic(Customizer.withDefaults()).
+        authenticationManager(
+        authenticationProvider -> {
+          String email= authenticationProvider.getPrincipal().toString();
+          String password=authenticationProvider.getCredentials().toString();
+          Map<String,String> accountAccess =swaggerAccountAccess.getAccountaccess();
+          if(accountAccess.containsKey(email)){
+            String passwordSystem=accountAccess.get(email);
+            if(passwordSystem.equals(password)){
+              return new  UsernamePasswordAuthenticationToken(email,password,
+                  List.of(new SimpleGrantedAuthority("ADMIN")));
+            }
+          }
+          throw new UsernameNotFoundException(email);
+        }
+    );
+    return http.build();
+  }
+
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {

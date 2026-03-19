@@ -30,5 +30,4 @@ import org.springframework.context.annotation.Configuration;
 )
 @OpenAPIDefinition( security = {@SecurityRequirement(name="Bearer Authentication"),@SecurityRequirement(name = "security_auth")})
 public class OpenApiConfig {
-
 }

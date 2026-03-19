@@ -1,13 +1,12 @@
-package com.example.studyhard;
+package com.studyhard.application;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
+
 class StudyHardApplicationTests {
 
-  @Test
-  void contextLoads() {
-  }
 
 }

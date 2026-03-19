@@ -226,6 +226,8 @@ public class UserAccountServiceImpl implements UserAccountService {
 
       user = User.builder()
           .status(UserStatus.ACTIVE)
+          .userName(googleUserResponse.getEmail())
+          .password(passwordEncoder.encode(UUID.randomUUID().toString()))
           .email(googleUserResponse.getEmail())
           .firstName(googleUserResponse.getGiven_name())
           .lastName(googleUserResponse.getFamily_name())

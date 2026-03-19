@@ -37,4 +37,18 @@ public class NotificationServiceImpl implements NotificationService {
       e.printStackTrace();
     }
   }
+  @Async
+  public void sendEmailForUseSwagger( String email, String code) {
+    try {
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setFrom(sender);
+      message.setTo(email);
+      message.setSubject("Confirmation");
+      message.setText(code);
+      mailSender.send(message);
+
+    }catch (Exception e){
+      e.printStackTrace();
+    }
+  }
 }

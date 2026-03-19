@@ -101,10 +101,15 @@ public class UserAccountController {
   }
 
   @GetMapping("/google")
-  public ResponseEntity<ApiResponse<String>> loginGoogle(HttpServletRequest request) {
+  public ResponseEntity<ApiResponse<UserLoginResponse>> loginGoogle(HttpServletRequest request,HttpServletResponse response) {
     String bearerToken = request.getHeader("Authorization");
     String accessToken=bearerToken.substring(7);
-    userAccountService.loginByGoogle(accessToken);
-    return null;
+    UserLoginResponse userLoginResponse= userAccountService.loginByGoogle(accessToken);
+    ResponseCookie resCookie = ResponseCookie.from("studyHard", userLoginResponse.getRefreshToken())
+        .httpOnly(true)
+        .secure(false)
+        .path("/")
+        .build();
+    return ResponseEntity.ok().body(ApiResponse.success(userLoginResponse));
   }
 }

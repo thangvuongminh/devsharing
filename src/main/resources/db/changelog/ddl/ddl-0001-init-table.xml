@@ -76,22 +76,6 @@
       <column name="updated_at" type="TIMESTAMP"/>
     </createTable>
 
-    <createTable tableName="user_skill">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-      <column name="profile_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_skill_profile" referencedTableName="user_profile" referencedColumnNames="id"/>
-      </column>
-      <column name="skill_name" type="VARCHAR(100)">
-        <constraints nullable="false"/>
-      </column>
-      <column name="proficiency_level" type="VARCHAR(50)"/>
-      <column name="year_of_experience" type="BIGINT" defaultValueNumeric="0"/>
-      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-    </createTable>
-
     <createTable tableName="category">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -141,9 +125,7 @@
       <column name="parent_block_id" type="BIGINT">
         <constraints foreignKeyName="fk_block_parent" referencedTableName="block" referencedColumnNames="id"/>
       </column>
-      <column name="type" type="VARCHAR(50)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="type" type="VARCHAR(50)"/>
       <column name="text_content" type="TEXT"/>
       <column name="properties" type="JSON"/>
       <column name="position" type="BIGINT" defaultValueNumeric="0"/>
@@ -166,113 +148,81 @@
       <column name="feedback" type="TEXT"/>
       <column name="action_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
+  </changeSet>
 
-    <createTable tableName="rating">
+  <changeSet id="20260305-003" author="thang-anonymous">
+    <createTable tableName="user_verification">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
-      <column name="content_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_rating_content" referencedTableName="content" referencedColumnNames="id"/>
-      </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_rating_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="true" foreignKeyName="fk_user_verification_user" referencedTableName="user" referencedColumnNames="id"/>
       </column>
-      <column name="rating_value" type="BIGINT">
+      <column name="verification_code" type="VARCHAR(255)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="expired_at" type="TIMESTAMP">
+        <constraints nullable="false"/>
+      </column>
+      <column name="channel" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="verified_at" type="TIMESTAMP"/>
+      <column name="receiver" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
       <column name="updated_at" type="TIMESTAMP"/>
+      <column name="created_by" type="BIGINT"/>
+      <column name="updated_by" type="BIGINT"/>
     </createTable>
+  </changeSet>
 
-    <createTable tableName="review">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-      <column name="rating_id" type="BIGINT">
-        <constraints foreignKeyName="fk_review_rating" referencedTableName="rating" referencedColumnNames="id"/>
-      </column>
-      <column name="content_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_review_content" referencedTableName="content" referencedColumnNames="id"/>
-      </column>
-      <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_review_user" referencedTableName="user" referencedColumnNames="id"/>
-      </column>
-      <column name="title" type="VARCHAR(255)"/>
-      <column name="content" type="TEXT"/>
-      <column name="is_verified_purchase" type="BOOLEAN" defaultValueBoolean="false"/>
-      <column name="helpful_count" type="INT" defaultValueNumeric="0"/>
-      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-    </createTable>
+  <changeSet id="20260305-004" author="thang-anonymous">
+    <dropNotNullConstraint tableName="user_verification" columnName="verified_at" columnDataType="timestamp"/>
+  </changeSet>
 
-    <createTable tableName="wallet">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
+  <changeSet id="20260313-004" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="support_ticket"/>
+      </not>
+    </preConditions>
+    <createTable tableName="support_ticket">
+      <column name="id" type="bigint">
+        <constraints primaryKey="true"/>
       </column>
-      <column name="user_id" type="BIGINT">
-        <constraints nullable="false" unique="true" foreignKeyName="fk_wallet_user" referencedTableName="user" referencedColumnNames="id"/>
+      <column name="userId" type="bigint">
+        <constraints foreignKeyName="fk_support_ticket_userid" referencedTableName="user" referencedColumnNames="id"/>
       </column>
-      <column name="balance" type="DECIMAL(19,2)" defaultValueNumeric="0.00"/>
-      <column name="version" type="BIGINT" defaultValueNumeric="0"/>
-      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-    </createTable>
-
-    <createTable tableName="transaction">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-      <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_trans_user" referencedTableName="user" referencedColumnNames="id"/>
-      </column>
-      <column name="type" type="VARCHAR(50)"/>
-      <column name="amount" type="DECIMAL(19,2)"/>
-      <column name="balance_before" type="DECIMAL(19,2)"/>
-      <column name="balance_after" type="DECIMAL(19,2)"/>
-      <column name="description" type="TEXT"/>
-      <column name="reference_id" type="BIGINT"/>
-      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-    </createTable>
-
-    <createTable tableName="purchase">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-      <column name="content_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_purchase_content" referencedTableName="content" referencedColumnNames="id"/>
-      </column>
-      <column name="consumer_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_purchase_user" referencedTableName="user" referencedColumnNames="id"/>
-      </column>
-      <column name="transaction_id" type="BIGINT">
-        <constraints foreignKeyName="fk_purchase_trans" referencedTableName="transaction" referencedColumnNames="id"/>
-      </column>
-      <column name="price" type="DECIMAL(19,2)"/>
-      <column name="purchased_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-    </createTable>
-
-    <createTable tableName="withdrawal_request">
-      <column name="id" type="BIGINT" autoIncrement="true">
-        <constraints primaryKey="true" nullable="false"/>
-      </column>
-      <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_withdraw_user" referencedTableName="user" referencedColumnNames="id"/>
-      </column>
-      <column name="amount" type="DECIMAL(19,2)">
+      <column name="issue" type="TEXT">
         <constraints nullable="false"/>
       </column>
-      <column name="status" type="VARCHAR(20)" defaultValue="PENDING"/>
-      <column name="bank_account_number" type="VARCHAR(50)"/>
-      <column name="bank_name" type="VARCHAR(100)"/>
-      <column name="account_holder_name" type="VARCHAR(100)"/>
-      <column name="note" type="TEXT"/>
-      <column name="admin_note" type="TEXT"/>
-      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-      <column name="reviewed_by" type="BIGINT">
-        <constraints foreignKeyName="fk_withdraw_admin" referencedTableName="user" referencedColumnNames="id"/>
+      <column name="status" type="varchar(50)"/>
+      <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="20260313-005" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="add-ticket-message"/>
+      </not>
+    </preConditions>
+    <createTable tableName="add-ticket-message">
+      <column name="id" type="bigint">
+        <constraints primaryKey="true"/>
       </column>
-      <column name="reviewed_at" type="TIMESTAMP"/>
+      <column name="userId" type="bigint">
+        <constraints foreignKeyName="fk_support_ticket_message_userid" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="message" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="support_ticket" type="bigint">
+        <constraints foreignKeyName="fk_support_ticket_message" referencedTableName="support_ticket" referencedColumnNames="id"/>
+      </column>
+      <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
 
