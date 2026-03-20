@@ -5,10 +5,12 @@ import com.studyhard.application.dto.request.MoveBlockRequest;
 import com.studyhard.application.dto.request.UpdateBlockRequest;
 import com.studyhard.application.entity.Block;
 import com.studyhard.application.entity.Content;
+import com.studyhard.application.entity.User;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.repository.BlockRepository;
 import com.studyhard.application.repository.ContentRepository;
+import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.service.BlockService;
 import com.studyhard.application.utils.UserExtractor;
 import java.time.Instant;
@@ -26,13 +28,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class BlockServiceImpl implements BlockService {
   ContentRepository contentRepository;
   BlockRepository blockRepository;
-
+  UserRepository userRepository;
   @Override
   @Transactional
   public Block createBlock(Long contentId, CreateBlockRequest createBlockRequest) {
     Content content = contentRepository.findById(contentId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
-    if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+    User user= userRepository.findById(UserExtractor.getUserId()).get();
+    if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
     Block parentContentBlock = null;
@@ -102,7 +105,8 @@ public class BlockServiceImpl implements BlockService {
   public Block checkAuthorizeContent(Long contentId, Long blockId) {
     Content content = contentRepository.findById(contentId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
-    if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+    User user= userRepository.findById(UserExtractor.getUserId()).get();
+    if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
     return blockRepository.findById(blockId)

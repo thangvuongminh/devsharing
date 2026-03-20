@@ -1,5 +1,6 @@
 package com.studyhard.application.repository;
 
+import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.Wallet;
 import jakarta.persistence.LockModeType;
 import java.util.Optional;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WalletRepository extends JpaRepository<Wallet, Long> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("select w from Wallet w where w.userId= :userId ")
-  Optional<Wallet> findByUserIdWithLock(@Param("userId") Long userId);
+  @Query("select w from Wallet w where w.user= :user ")
+  Optional<Wallet> findByUserIdWithLock(@Param("user") User user);
   Optional<Wallet> findByUserId(Long userId);
 }

@@ -5,7 +5,12 @@
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
 
-  <changeSet id="20260305-001" author="thang-anonymous">
+  <changeSet id="20260320-001" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user"/>
+      </not>
+    </preConditions>
     <createTable tableName="user">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -19,18 +24,21 @@
       <column name="password" type="VARCHAR(255)">
         <constraints nullable="false"/>
       </column>
-      <column name="firstname" type="VARCHAR(50)"/>
-      <column name="lastname" type="VARCHAR(50)"/>
+      <column name="full_name" type="VARCHAR(100)"/>
       <column name="phone_number" type="VARCHAR(20)"/>
-      <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+      <column name="status" type="VARCHAR(20)" defaultValue="PENDING_ACTIVE">
         <constraints nullable="false"/>
       </column>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-      <column name="created_by" type="BIGINT"/>
-      <column name="updated_by" type="BIGINT"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-002" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="role"/>
+      </not>
+    </preConditions>
     <createTable tableName="role">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -40,7 +48,13 @@
       </column>
       <column name="description" type="VARCHAR(255)"/>
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-003" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user_role"/>
+      </not>
+    </preConditions>
     <createTable tableName="user_role">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -52,9 +66,15 @@
         <constraints nullable="false" foreignKeyName="fk_user_role_role" referencedTableName="role" referencedColumnNames="id"/>
       </column>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-004" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user_profile"/>
+      </not>
+    </preConditions>
     <createTable tableName="user_profile">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -73,9 +93,15 @@
       <column name="facebook" type="VARCHAR(255)"/>
       <column name="personal_website" type="VARCHAR(255)"/>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"  defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-005" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="category"/>
+      </not>
+    </preConditions>
     <createTable tableName="category">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -85,12 +111,18 @@
       </column>
       <column name="description" type="TEXT"/>
       <column name="slug" type="VARCHAR(150)">
-        <constraints nullable="false" unique="true"/>
+        <constraints  unique="true"/>
       </column>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-006" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="content"/>
+      </not>
+    </preConditions>
     <createTable tableName="content">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -101,9 +133,7 @@
       <column name="creator_id" type="BIGINT">
         <constraints nullable="false" foreignKeyName="fk_content_user" referencedTableName="user" referencedColumnNames="id"/>
       </column>
-      <column name="title" type="VARCHAR(255)">
-        <constraints nullable="false"/>
-      </column>
+      <column name="title" type="VARCHAR(255)" />
       <column name="description" type="TEXT"/>
       <column name="status" type="VARCHAR(20)" defaultValue="DRAFT"/>
       <column name="level" type="VARCHAR(20)"/>
@@ -112,9 +142,15 @@
       <column name="purchase_count" type="BIGINT" defaultValueNumeric="0"/>
       <column name="published_at" type="TIMESTAMP"/>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP"  defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-007" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="block"/>
+      </not>
+    </preConditions>
     <createTable tableName="block">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -131,9 +167,15 @@
       <column name="position" type="BIGINT" defaultValueNumeric="0"/>
       <column name="is_free" type="BOOLEAN" defaultValueBoolean="false"/>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
-
+  </changeSet>
+  <changeSet id="20260320-008" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="content_review"/>
+      </not>
+    </preConditions>
     <createTable tableName="content_review">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -150,7 +192,12 @@
     </createTable>
   </changeSet>
 
-  <changeSet id="20260305-003" author="thang-anonymous">
+  <changeSet id="20260320-009" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user_verification"/>
+      </not>
+    </preConditions>
     <createTable tableName="user_verification">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
@@ -172,24 +219,17 @@
         <constraints nullable="false"/>
       </column>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" type="TIMESTAMP"/>
-      <column name="created_by" type="BIGINT"/>
-      <column name="updated_by" type="BIGINT"/>
     </createTable>
   </changeSet>
 
-  <changeSet id="20260305-004" author="thang-anonymous">
-    <dropNotNullConstraint tableName="user_verification" columnName="verified_at" columnDataType="timestamp"/>
-  </changeSet>
-
   <changeSet id="20260313-004" author="thang-anonymous">
-    <preConditions onFail="MARK_RAN">
+    <preConditions onFail="MARK_RAN" >
       <not>
         <tableExists tableName="support_ticket"/>
       </not>
     </preConditions>
     <createTable tableName="support_ticket">
-      <column name="id" type="bigint">
+      <column name="id" type="bigint" autoIncrement="true">
         <constraints primaryKey="true"/>
       </column>
       <column name="userId" type="bigint">
@@ -198,19 +238,19 @@
       <column name="issue" type="TEXT">
         <constraints nullable="false"/>
       </column>
-      <column name="status" type="varchar(50)"/>
+      <column name="status" type="varchar(50)" defaultValue="Received"/>
       <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
 
-  <changeSet id="20260313-005" author="thang-anonymous">
+  <changeSet id="20260320-010" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
-        <tableExists tableName="add-ticket-message"/>
+        <tableExists tableName="ticket_message"/>
       </not>
     </preConditions>
-    <createTable tableName="add-ticket-message">
-      <column name="id" type="bigint">
+    <createTable tableName="ticket_message">
+      <column name="id" type="bigint" autoIncrement="true">
         <constraints primaryKey="true"/>
       </column>
       <column name="userId" type="bigint">
@@ -225,5 +265,117 @@
       <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
-
+  <changeSet id="20260320-011" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="transaction"/>
+      </not>
+    </preConditions>
+    <createTable tableName="transaction">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_transaction_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="type" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="amount" type="DECIMAL(19,2)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="balance_before" type="DECIMAL(19,2)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="balance_after" type="DECIMAL(19,2)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="description" type="TEXT"/>
+      <column name="reference_id" type="VARCHAR(255)"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+  <changeSet id="20260320-012" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="user_skill"/>
+      </not>
+    </preConditions>
+    <createTable tableName="user_skill">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="profile_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_user_skill_profile" referencedTableName="user_profile" referencedColumnNames="id"/>
+      </column>
+      <column name="skill_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="proficiency_level" type="INTEGER"/>
+      <column name="years_of_experience" type="INTEGER"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="created_by" type="BIGINT"/>
+      <column name="updated_by" type="BIGINT"/>
+    </createTable>
+  </changeSet>
+  <changeSet id="20260320-013" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="wallet"/>
+      </not>
+    </preConditions>
+    <createTable tableName="wallet">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" unique="true" foreignKeyName="fk_wallet_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="balance" type="DECIMAL(19,2)" defaultValueNumeric="0.00">
+        <constraints nullable="false"/>
+      </column>
+      <column name="version" type="BIGINT" defaultValueNumeric="0"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+  </changeSet>
+  <changeSet id="20260320-014" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="withdrawal_request"/>
+      </not>
+    </preConditions>
+    <createTable tableName="withdrawal_request">
+      <column name="id" type="BIGINT" autoIncrement="true">
+        <constraints primaryKey="true" nullable="false"/>
+      </column>
+      <column name="user_id" type="BIGINT">
+        <constraints nullable="false" foreignKeyName="fk_withdrawal_user" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="amount" type="DECIMAL(19,2)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="status" type="VARCHAR(20)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="bank_account_number" type="VARCHAR(50)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="bank_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="account_holder_name" type="VARCHAR(100)">
+        <constraints nullable="false"/>
+      </column>
+      <column name="note" type="TEXT"/>
+      <column name="admin_note" type="TEXT"/>
+      <column name="reviewed_by" type="BIGINT">
+        <constraints foreignKeyName="fk_withdrawal_reviewer" referencedTableName="user" referencedColumnNames="id"/>
+      </column>
+      <column name="reviewed_at" type="TIMESTAMP"/>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+      <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+    </createTable>
+  </changeSet>
 </databaseChangeLog>

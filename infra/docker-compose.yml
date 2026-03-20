@@ -1,7 +1,7 @@
 
 services:
   study-hard:
-    image: studyhardweb:latest
+    image: studyhardweb:1.0.1
     container_name: study-hard-app
     env_file: env
     environment:

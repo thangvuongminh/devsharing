@@ -1,4 +1,4 @@
-package com.studyhard.application.entity;
+package com.studyhard.application.dto.response;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

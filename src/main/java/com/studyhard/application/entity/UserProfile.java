@@ -1,11 +1,11 @@
 package com.studyhard.application.entity;
+
 import com.studyhard.application.model.GenderEnum;
 import jakarta.persistence.*;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.Instant;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -16,34 +16,50 @@ import java.time.Instant;
 @Entity
 @Table(name = "user_profile")
 public class UserProfile {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(name = "birthdate", nullable = false)
-  Date birthDate;
-  @Column(name = "gender", nullable = false)
+
+  @Column(name = "birthdate")
+  LocalDate birthDate;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "gender", length = 10)
   GenderEnum gender;
-  @Column(name = "address", nullable = false)
+
+  @Column(name = "address", length = 255)
   String address;
-  @Column(name = "bio", nullable = false)
+
+  @Column(name = "bio", columnDefinition = "TEXT")
   String bio;
-  @Column(name = "avatar", nullable = false)
+
+  @Column(name = "avatar", length = 255)
   String avatar;
-  @Column(name = "company", nullable = false)
+
+  @Column(name = "company", length = 100)
   String company;
-  @Column(name = "year_experience", nullable = false)
-  Long yearOfExperience;
-  @Column(name = "education_level", nullable = false)
+
+  @Column(name = "year_experience")
+  @Builder.Default
+  Long yearOfExperience = 0L;
+
+  @Column(name = "education_level", length = 100)
   String educationLevel;
-  @Column(name = "facebook", nullable = false)
+
+  @Column(name = "facebook", length = 255)
   String facebook;
-  @Column(name = "personal_website", nullable = false)
+
+  @Column(name = "personal_website", length = 255)
   String personalWebsite;
-  @Column(name = "created_at", nullable = false)
-  Instant createAt;
-  @Column(name = "updated_at", nullable = false)
-  Instant updateAt;
-  @OneToOne
-  @JoinColumn(name = "user_id",referencedColumnName = "id",nullable = false)
+
+  @Column(name = "created_at", updatable = false)
+  Instant createdAt;
+
+  @Column(name = "updated_at")
+  Instant updatedAt;
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
   User user;
 }

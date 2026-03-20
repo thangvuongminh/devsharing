@@ -1,19 +1,8 @@
 package com.studyhard.application.entity;
 
 import com.studyhard.application.model.ReviewAction;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.Instant;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -26,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ContentReview {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
@@ -34,16 +24,17 @@ public class ContentReview {
   @JoinColumn(name = "content_id", nullable = false)
   Content content;
 
-  @Column(name = "moderator_id", nullable = false)
-  private Long moderatorId;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "moderator_id", nullable = false)
+  User moderator;
 
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
+  @Column(name = "action", length = 50)
   ReviewAction action;
 
-  @Column(columnDefinition = "TEXT")
-  private String feedback;
+  @Column(name = "feedback", columnDefinition = "TEXT")
+  String feedback;
 
-  @Column(name = "actionAt", nullable = false)
-  private Instant actionAt;
+  @Column(name = "action_at", nullable = false, updatable = false)
+  Instant actionAt;
 }

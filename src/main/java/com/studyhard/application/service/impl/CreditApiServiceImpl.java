@@ -4,10 +4,12 @@ import com.studyhard.application.dto.AddCreditRequest;
 import com.studyhard.application.dto.CreditBalanceDto;
 import com.studyhard.application.dto.CreditTransactionDto;
 import com.studyhard.application.dto.request.DeductCreditRequest;
+import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.Wallet;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.model.TransactionType;
+import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.repository.WalletRepository;
 import com.studyhard.application.service.CreditApiService;
 import com.studyhard.application.service.WalletService;
@@ -25,7 +27,7 @@ public class CreditApiServiceImpl implements CreditApiService {
 
   WalletRepository walletRepository;
   WalletService walletService;
-
+  UserRepository userRepository;
   @Override
   @Transactional(readOnly = true)
   public CreditBalanceDto getBalance(Long userId) {
@@ -33,7 +35,7 @@ public class CreditApiServiceImpl implements CreditApiService {
         ExceptionEnum.WALLET_NOT_FOUND));
 
     return CreditBalanceDto.builder()
-        .userId(wallet.getUserId())
+        .userId(wallet.getUser().getId())
         .balance(wallet.getBalance())
         .build();
   }
@@ -41,15 +43,17 @@ public class CreditApiServiceImpl implements CreditApiService {
   @Override
   @Transactional
   public CreditTransactionDto deductCredit(DeductCreditRequest request) {
-    Wallet walletBefore = walletRepository.findByUserIdWithLock(request.getUserId())
+    User user=userRepository.findById(request.getUserId()).get();
+    Wallet walletBefore = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));
-    walletService.deductCredit(request.getUserId(), request.getAmount(), TransactionType.PURCHASE,
+    User userBefore = walletBefore.getUser();
+    walletService.deductCredit(userBefore, request.getAmount(), TransactionType.PURCHASE,
         request.getReason(), request.getReferenceId());
-    Wallet walletAfter = walletRepository.findByUserIdWithLock(request.getUserId())
+    Wallet walletAfter = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));
     ;
     return CreditTransactionDto.builder()
-        .userId(walletAfter.getUserId())
+        .userId(walletAfter.getUser().getId())
         .referenceId(request.getReferenceId())
         .amount(request.getAmount())
         .balanceBefore(walletBefore.getBalance())
@@ -62,15 +66,16 @@ public class CreditApiServiceImpl implements CreditApiService {
 
   @Override
   public CreditTransactionDto addCredit(AddCreditRequest request) {
-    Wallet walletBefore = walletRepository.findByUserIdWithLock(request.getUserId())
+    User user=userRepository.findById(request.getUserId()).get();
+    Wallet walletBefore = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));
     walletService.addCredit(request.getUserId(), request.getAmount(), TransactionType.EARNING,
         request.getReason(), request.getReferenceId());
-    Wallet walletAfter = walletRepository.findByUserIdWithLock(request.getUserId())
+    Wallet walletAfter = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));
     ;
     return CreditTransactionDto.builder()
-        .userId(walletAfter.getUserId())
+        .userId(walletAfter.getUser().getId())
         .referenceId(request.getReferenceId())
         .amount(request.getAmount())
         .balanceBefore(walletBefore.getBalance())

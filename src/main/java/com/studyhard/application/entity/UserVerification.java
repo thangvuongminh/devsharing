@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.Instant;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,27 +15,38 @@ import java.time.Instant;
 @Entity
 @Table(name = "user_verification")
 public class UserVerification {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(name = "verification_code", nullable = false)
+
+  @Column(name = "verification_code", nullable = false, length = 255)
   String verificationCode;
+
   @Column(name = "expired_at", nullable = false)
   Instant expiredAt;
-  @Column(name = "channel", nullable = false)
+
+  @Column(name = "channel", nullable = false, length = 50)
   String channel;
-  @Column(name = "verified_at", nullable = false)
+
+  @Column(name = "verified_at")
   Instant verifiedAt;
-  @Column(name = "receiver", nullable = false)
+
+  @Column(name = "receiver", nullable = false, length = 255)
   String receiver;
-  @Column(name = "created_at", nullable = false)
-  Instant createAt;
-  @Column(name = "updated_at", nullable = false)
-  Instant updateAt;
-  @Column(name = "created_by", nullable = false)
-  long createBy;
-  @Column(name = "updated_by", nullable = false)
-  long updateBy;
+
+  @Column(name = "created_at", updatable = false)
+  Instant createdAt;
+
+  @Column(name = "updated_at")
+  Instant updatedAt;
+
+  @Column(name = "created_by")
+  Long createdBy;
+
+  @Column(name = "updated_by")
+  Long updatedBy;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   User user;

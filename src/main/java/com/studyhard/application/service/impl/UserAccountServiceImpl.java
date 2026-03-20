@@ -6,7 +6,7 @@ import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
-import com.studyhard.application.entity.GoogleUserResponse;
+import com.studyhard.application.dto.response.GoogleUserResponse;
 import com.studyhard.application.entity.Role;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.UserRole;
@@ -30,19 +30,16 @@ import com.studyhard.application.utils.UserExtractor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.nio.file.AccessDeniedException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -56,7 +53,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -97,7 +93,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(),
             userLoginRequest.getPassword()));
     String username = userLoginRequest.getUsername();
-    User user = userRepository.findByUserName(username)
+    User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
     List<UserRole> userRole = userRoleRepository.findByUser(user);
     String[] roles = userRole.stream().map(userRole1 ->
@@ -226,22 +222,19 @@ public class UserAccountServiceImpl implements UserAccountService {
 
       user = User.builder()
           .status(UserStatus.ACTIVE)
-          .userName(googleUserResponse.getEmail())
+          .username(googleUserResponse.getEmail())
           .password(passwordEncoder.encode(UUID.randomUUID().toString()))
           .email(googleUserResponse.getEmail())
-          .firstName(googleUserResponse.getGiven_name())
-          .lastName(googleUserResponse.getFamily_name())
-          .createAt(Instant.now())
-          .createBy(0)
-          .updateAt(Instant.now())
-          .updateBy(0)
+          .fullName(googleUserResponse.getGiven_name() + googleUserResponse.getFamily_name())
+          .createdAt(Instant.now())
+          .updatedAt(Instant.now())
           .build();
       userRepository.save(user);
       UserRole userRole=UserRole.builder()
           .user(user)
           .role(role)
-          .createAt(Instant.now())
-          .updateAt(Instant.now())
+          .createdAt(Instant.now())
+          .updatedAt(Instant.now())
           .build();
       userRoleRepository.save(userRole);
     }
@@ -267,10 +260,10 @@ public class UserAccountServiceImpl implements UserAccountService {
       Instant expireEmailVerificationTime = Instant.now().plus(1, ChronoUnit.DAYS);
       userVerification.setExpiredAt(expireEmailVerificationTime);
       userVerification.setChannel(UserVerificationChannel.EMAIL.name());
-      userVerification.setCreateBy(user.getId());
-      userVerification.setUpdateBy(user.getId());
-      userVerification.setCreateAt(Instant.now());
-      userVerification.setUpdateAt(Instant.now());
+      userVerification.setCreatedBy(user.getId());
+      userVerification.setUpdatedBy(user.getId());
+      userVerification.setCreatedAt(Instant.now());
+      userVerification.setUpdatedAt(Instant.now());
       userVerificationRepository.save(userVerification);
     } catch (Exception e) {
       e.printStackTrace();
@@ -285,7 +278,7 @@ public class UserAccountServiceImpl implements UserAccountService {
   }
 
   public void checkUserExists(String username) {
-    var user = userRepository.findByUserName(username);
+    var user = userRepository.findByUsername(username);
     if (user.isPresent()) {
       throw new StudyHardException(ExceptionEnum.USERNAME_ALREADY_EXISTS);
     }
@@ -301,12 +294,10 @@ public class UserAccountServiceImpl implements UserAccountService {
     User user = User.builder()
         .email(request.getEmail())
         .password(passwordEncoder.encode(request.getPassword()))
-        .userName(request.getUsername())
-        .createAt(Instant.now())
-        .updateAt(Instant.now())
+        .username(request.getUsername())
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
         .status(UserStatus.PENDING_ACTIVE)
-        .createBy(0)
-        .updateBy(0)
         .build();
     userRepository.save(user);
     return user;
@@ -316,8 +307,8 @@ public class UserAccountServiceImpl implements UserAccountService {
     UserRole userRole = UserRole.builder()
         .user(user)
         .role(role)
-        .createAt(Instant.now())
-        .updateAt(Instant.now())
+        .createdAt(Instant.now())
+        .updatedAt(Instant.now())
         .build();
     userRoleRepository.save(userRole);
   }

@@ -1,11 +1,8 @@
 package com.studyhard.application.entity;
 
 import jakarta.persistence.*;
-import jdk.jfr.Timestamp;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.constraints.Length;
-
 import java.time.Instant;
 
 @Getter
@@ -15,20 +12,25 @@ import java.time.Instant;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "category")
 public class Category {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(length = 100,nullable = false)
+
+  @Column(name = "name", length = 100, nullable = false)
   String name;
-  @Length(max =500)
+
+  @Column(name = "description", columnDefinition = "TEXT")
   String description;
-  @Column(length = 50)
+
+  @Column(name = "slug", length = 150, unique = true)
   String slug;
-  @Timestamp
-  @Column(name = "created_at")
+
+  @Column(name = "created_at", updatable = false)
   Instant createdAt;
-  @Timestamp
+
   @Column(name = "updated_at")
-  Instant updatedAtt;
+  Instant updatedAt;
 }

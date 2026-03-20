@@ -1,6 +1,5 @@
 package com.studyhard.application.entity;
 
-
 import com.studyhard.application.model.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,14 +16,18 @@ import java.util.List;
 @Entity
 @Table(name = "role")
 public class Role {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(name = "role_name", nullable = false)
+
+  @Column(name = "role_name", length = 50, nullable = false, unique = true)
   @Enumerated(EnumType.STRING)
   RoleEnum roleName;
-  @Column(name = "description", nullable = false)
+
+  @Column(name = "description", length = 255)
   String description;
-  @OneToMany(mappedBy = "role",fetch = FetchType.LAZY)
+
+  @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
   List<UserRole> userRole;
 }

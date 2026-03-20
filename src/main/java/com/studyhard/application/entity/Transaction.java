@@ -1,20 +1,10 @@
 package com.studyhard.application.entity;
+
 import com.studyhard.application.model.TransactionType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Getter
@@ -24,24 +14,36 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 @Entity
+@Table(name = "`transaction`")
 public class Transaction {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(name = "user_id",updatable = true,nullable = false)
-  Long userId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  User user;
+
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(name = "type", nullable = false, length = 50)
   TransactionType type;
-  @Column(precision = 19,scale = 2,nullable = false)
+
+  @Column(name = "amount", precision = 19, scale = 2, nullable = false)
   BigDecimal amount;
-  @Column(precision = 19,scale = 2,nullable = false,name = "balance_before")
+
+  @Column(name = "balance_before", precision = 19, scale = 2, nullable = false)
   BigDecimal balanceBefore;
-  @Column(precision = 19,scale = 2,nullable = false,name = "balance_after")
+
+  @Column(name = "balance_after", precision = 19, scale = 2, nullable = false)
   BigDecimal balanceAfter;
+
+  @Column(name = "description", columnDefinition = "TEXT")
   String description;
-  @Column(name = "reference_id")
+
+  @Column(name = "reference_id", length = 255)
   String referenceId;
-  @Column(name = "created_at",nullable = false)
-  Instant createAt;
+
+  @Column(name = "created_at", nullable = false, updatable = false)
+  Instant createdAt;
 }

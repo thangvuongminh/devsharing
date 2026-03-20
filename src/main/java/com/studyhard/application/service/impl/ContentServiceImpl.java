@@ -9,6 +9,7 @@ import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Category;
 import com.studyhard.application.entity.Content;
 import com.studyhard.application.entity.ContentReview;
+import com.studyhard.application.entity.User;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mapper.ContentMapper;
@@ -19,6 +20,7 @@ import com.studyhard.application.redis.repository.CardContentRepository;
 import com.studyhard.application.repository.CategoryRepository;
 import com.studyhard.application.repository.ContentRepository;
 import com.studyhard.application.repository.ContentReviewRepository;
+import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.service.CategoryService;
 import com.studyhard.application.service.ContentService;
 import com.studyhard.application.utils.UserExtractor;
@@ -41,24 +43,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-@FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ContentServiceImpl implements ContentService {
+
   ContentMapper contentMapper;
   ContentRepository contentRepository;
   CategoryRepository categoryRepository;
   CategoryService categoryService;
   CardContentRepository cardContentRepository;
   ContentReviewRepository contentReviewRepository;
+  UserRepository userRepository;
+
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {
     Category category = categoryService.getCategoryById(createContentRequest.getCategoryId());
+
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     Content content = Content.builder()
-        .creatorId(UserExtractor.getUserId())
+        .creator(user)
         .description(createContentRequest.getDescription())
         .price(createContentRequest.getPrice())
         .title(createContentRequest.getTitle())
-        .categoryId(category.getId())
+        .category(category)
         .level(createContentRequest.getContentLevel())
         .status(ContentStatus.DRAFT)
         .createdAt(Instant.now())
@@ -74,32 +81,35 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(id).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
+    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
     if (!(content.getStatus() == ContentStatus.PUBLISHED)) {
-      if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+      if (!content.getCreator().equals(user)) {
         throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
       }
     }
     return contentMapper.toContentDto(content);
   }
+
   @Transactional
-  public  CartContent createCart(){
-    CartContent cartContent=CartContent.builder()
+  public CartContent createCart() {
+    CartContent cartContent = CartContent.builder()
         .contentIds(new LinkedHashSet<>())
         .userId(UserExtractor.getUserId())
         .build();
     cardContentRepository.save(cartContent);
     return cartContent;
   }
+
   @Override
   @Transactional
   public void addToCard(Long contentId) {
     Content content = contentRepository.findById(contentId).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-   CartContent cartContent=cardContentRepository.findById(UserExtractor.getUserId())
-       .orElse(createCart());
+    CartContent cartContent = cardContentRepository.findById(UserExtractor.getUserId())
+        .orElse(createCart());
     LinkedHashSet<Long> allContentIds = cartContent.getContentIds();
-    if(allContentIds.contains(contentId)) {
+    if (allContentIds.contains(contentId)) {
       throw new StudyHardException(ExceptionEnum.CONTENT_ALREADY_YOUR_CAR);
     }
     allContentIds.add(contentId);
@@ -110,7 +120,7 @@ public class ContentServiceImpl implements ContentService {
   @Override
   public List<ContentSummaryDto> getAllCard() {
     Long userId = UserExtractor.getUserId();
-    Optional<CartContent> cartContent=cardContentRepository.findById(userId);
+    Optional<CartContent> cartContent = cardContentRepository.findById(userId);
     if (cartContent.isPresent()) {
       LinkedHashSet<Long> allContentIds = cartContent.get().getContentIds();
       List<Content> contents = contentRepository.findBySetContentId(allContentIds);
@@ -122,13 +132,15 @@ public class ContentServiceImpl implements ContentService {
   @Override
   @Transactional
   public ContentSummaryDto submitReviewContent(String contentId) {
-    Content content=contentRepository.findById(Long.parseLong(contentId)).orElseThrow(
+    Content content = contentRepository.findById(Long.parseLong(contentId)).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
-    if (!(content.getStatus().equals(ContentStatus.REJECTED)) && !(content.getStatus().equals(ContentStatus.PENDING_REVIEW)) ) {
+    if (!(content.getStatus().equals(ContentStatus.REJECTED)) && !(content.getStatus()
+        .equals(ContentStatus.PENDING_REVIEW))) {
       throw new StudyHardException(ExceptionEnum.CONTENT_REVIEW_OR_REJECTION);
     }
     content.setStatus(ContentStatus.REJECTED);
@@ -139,7 +151,8 @@ public class ContentServiceImpl implements ContentService {
   @Override
   @Transactional(readOnly = true)
   public Page<ContentSummaryDto> getAllContentPendingReview(Pageable pageable) {
-    Page<Content> contentPage=contentRepository.findByStatus(ContentStatus.PENDING_REVIEW, pageable);
+    Page<Content> contentPage = contentRepository.findByStatus(ContentStatus.PENDING_REVIEW,
+        pageable);
     return contentPage.map(contentMapper::toContentSummaryDto);
   }
 
@@ -149,9 +162,10 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(request.getContentId()).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    ContentReview contentReview= ContentReview.builder()
+    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    ContentReview contentReview = ContentReview.builder()
         .content(content)
-        .moderatorId(UserExtractor.getUserId())
+        .moderator(user)
         .feedback(request.getAdminNote())
         .action(request.getReviewAction())
         .actionAt(Instant.now())
@@ -163,11 +177,12 @@ public class ContentServiceImpl implements ContentService {
   @Override
   @Transactional
   public void publishContent(String contentId) {
-    Long contentIdLong=Long.parseLong(contentId);
+    Long contentIdLong = Long.parseLong(contentId);
     Content content = contentRepository.findById(contentIdLong).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    if (!content.getCreatorId().equals(UserExtractor.getUserId())) {
+    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
     content.setStatus(ContentStatus.PUBLISHED);

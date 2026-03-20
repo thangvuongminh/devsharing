@@ -3,7 +3,6 @@ package com.studyhard.application.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.time.Instant;
 
 @Getter
@@ -15,24 +14,33 @@ import java.time.Instant;
 @Entity
 @Table(name = "user_skill")
 public class UserSkill {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
-  @Column(name = "skill_name", nullable = false)
+
+  @Column(name = "skill_name", nullable = false, length = 100)
   String skillName;
-  @Column(name = "proficiency_level", nullable = false)
-  Byte proficiencyLevel;
-  @Column(name = "yearOfExperience", nullable = false)
-  Byte yearOfExperience;
-  @Column(name = "created_at", nullable = false)
-  Instant createAt;
-  @Column(name = "updated_at", nullable = false)
-  Instant updateAt;
-  @Column(name = "created_by", nullable = false)
-  long createBy;
-  @Column(name = "updated_by", nullable = false)
-  long updateBy;
+
+  @Column(name = "proficiency_level")
+  Integer proficiencyLevel;
+
+  @Column(name = "years_of_experience")
+  Integer yearsOfExperience;
+
+  @Column(name = "created_at", updatable = false)
+  Instant createdAt;
+
+  @Column(name = "updated_at")
+  Instant updatedAt;
+
+  @Column(name = "created_by")
+  Long createdBy;
+
+  @Column(name = "updated_by")
+  Long updatedBy;
+
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "profile_id")
+  @JoinColumn(name = "profile_id", nullable = false)
   UserProfile userProfile;
 }

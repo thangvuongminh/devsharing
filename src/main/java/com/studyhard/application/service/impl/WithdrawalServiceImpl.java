@@ -2,12 +2,14 @@ package com.studyhard.application.service.impl;
 
 import com.studyhard.application.dto.WithdrawalRequestDto;
 import com.studyhard.application.dto.request.ReviewWithdrawalRequest;
+import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.Wallet;
 import com.studyhard.application.entity.WithdrawalRequest;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.model.TransactionType;
 import com.studyhard.application.model.WithdrawalStatus;
+import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.repository.WalletRepository;
 import com.studyhard.application.repository.WithdrawalRepository;
 import com.studyhard.application.service.WalletService;
@@ -33,6 +35,7 @@ public class WithdrawalServiceImpl implements WithdrawalService {
   WithdrawalRepository withdrawalRepository;
   WalletService walletService;
   WalletRepository walletRepository;
+  UserRepository userRepository;
   @Override
   @Transactional
   public WithdrawalRequest createWithdrawalRequest(WithdrawalRequestDto withdrawalRequestDto) {
@@ -40,7 +43,8 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     if (withdrawalRequestDto.getAmount().compareTo(MIN_WITHDRAWAL) <= 0) {
       throw new StudyHardException(ExceptionEnum.MINIMUM_WITHDRAWAL_NOT_FULFILL);
     }
-    Wallet wallet = walletRepository.findByUserIdWithLock(userId).orElseThrow(
+    User user1 = userRepository.findById(userId).get();
+    Wallet wallet = walletRepository.findByUserIdWithLock(user1).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND)
     );
     if (wallet.getBalance().compareTo(withdrawalRequestDto.getAmount()) <= 0) {
@@ -51,9 +55,10 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     if (withdrawalRequest.isPresent()) {
       throw new StudyHardException(ExceptionEnum.PENDING_WITHDRAWAL_EXISTS);
     }
+    User user=userRepository.findById(UserExtractor.getUserId()).get();
     WithdrawalRequest withdrawalRequest1=WithdrawalRequest.builder()
         .createdAt(Instant.now())
-        .userId(userId)
+        .user(user)
         .accountHolderName(withdrawalRequestDto.getAccountHolderName())
         .bankName(withdrawalRequestDto.getBankName())
         .amount(withdrawalRequestDto.getAmount())
@@ -78,7 +83,8 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     WithdrawalRequest withdrawalRequest = withdrawalRepository.findById(requestId).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.WITHDRAWAL_NOT_EXIST, new Object[]{requestId})
     );
-    if (!withdrawalRequest.getUserId().equals(UserExtractor.getUserId())) {
+    User user=userRepository.findById(UserExtractor.getUserId()).get();
+    if (!withdrawalRequest.getUser().equals(user)) {
       throw new StudyHardException(ExceptionEnum.WITHDRAWAL_NOT_AUTHORIZE);
     }
     return withdrawalRequest;
@@ -99,8 +105,9 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     if(!withdrawalRequest.getStatus().equals(WithdrawalStatus.PENDING)) {
       throw new StudyHardException(ExceptionEnum.WITHDRAWAL_ALREADY_PROCESSED);
     }
+    User user=userRepository.findById(UserExtractor.getUserId()).get();
     if (reviewWithdrawalRequest.getApproved()){
-      walletService.deductCredit(withdrawalRequest.getUserId(),withdrawalRequest.getAmount(),
+      walletService.deductCredit(withdrawalRequest.getUser(),withdrawalRequest.getAmount(),
           TransactionType.WITHDRAW,"Withdrawal approve " + reviewWithdrawalRequest.getAdminNote(), String.valueOf(withdrawalId));
       withdrawalRequest.setStatus(WithdrawalStatus.APPROVE);
     }else {
@@ -108,7 +115,7 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     }
     withdrawalRequest.setReviewedAt(Instant.now());
     withdrawalRequest.setAdminNote(reviewWithdrawalRequest.getAdminNote());
-    withdrawalRequest.setReviewedBy(UserExtractor.getUserId());
+    withdrawalRequest.setReviewer(user);
     withdrawalRequest.setUpdatedAt(Instant.now());
     withdrawalRepository.save(withdrawalRequest);
     return withdrawalRequest;
