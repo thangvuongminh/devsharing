@@ -21,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
     name = "security_auth",
     type = SecuritySchemeType.OAUTH2,
     flows = @OAuthFlows(authorizationCode =
-        @OAuthFlow(authorizationUrl = "https://accounts.google.com/o/oauth2/v2/auth",tokenUrl = "https://oauth2.googleapis.com/token"
+        @OAuthFlow(authorizationUrl = "https://accounts.google.com/o/oauth2/v2/auth",tokenUrl = "http://localhost:8090/user/account/google"
         ,scopes = {
             @OAuthScope(name = "https://www.googleapis.com/auth/userinfo.email"),
             @OAuthScope(name = "https://www.googleapis.com/auth/userinfo.profile"),

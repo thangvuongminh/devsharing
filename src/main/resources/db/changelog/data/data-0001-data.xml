@@ -29,7 +29,7 @@
   </changeSet>
 
   <changeSet id="20260320-seed-user" author="thang-anonymous">
-    <insert tableName="user">
+    <insert tableName="users">
       <column name="id" valueNumeric="1"/>
       <column name="username" value="admin"/>
       <column name="email" value="admin@studyhard.com"/>
@@ -40,7 +40,7 @@
       <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
       <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
-    <insert tableName="user">
+    <insert tableName="users">
       <column name="id" valueNumeric="2"/>
       <column name="username" value="moderator"/>
       <column name="email" value="moderator@studyhard.com"/>
@@ -51,7 +51,7 @@
       <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
       <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
-    <insert tableName="user">
+    <insert tableName="users">
       <column name="id" valueNumeric="3"/>
       <column name="username" value="consumer1"/>
       <column name="email" value="consumer1@studyhard.com"/>
@@ -62,7 +62,7 @@
       <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
       <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
-    <insert tableName="user">
+    <insert tableName="users">
       <column name="id" valueNumeric="4"/>
       <column name="username" value="consumer2"/>
       <column name="email" value="consumer2@studyhard.com"/>
@@ -73,7 +73,7 @@
       <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
       <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
-    <insert tableName="user">
+    <insert tableName="users">
       <column name="id" valueNumeric="5"/>
       <column name="username" value="creator1"/>
       <column name="email" value="creator1@studyhard.com"/>

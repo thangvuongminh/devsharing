@@ -21,4 +21,6 @@ public interface ContentRepository extends JpaRepository<Content,Long>,
   List<Content> findBySetContentId(@Param("setContent") LinkedHashSet<Long> setContent);
 
   Page<Content> findByStatus(ContentStatus status, Pageable pageable);
+
+  List<Content> findAllByCreator_Id(Long creatorId);
 }

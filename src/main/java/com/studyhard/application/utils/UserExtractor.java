@@ -6,7 +6,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 public class UserExtractor {
   public  static Long getUserId(){
     JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-    Long userId =(Long) jwtAuthenticationToken.getToken().getClaims().get("userId");
+    Long userId = Long.valueOf(jwtAuthenticationToken.getToken().getClaims().get("userId").toString());
     return userId;
   }
 }

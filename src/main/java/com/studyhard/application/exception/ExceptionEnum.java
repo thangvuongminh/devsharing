@@ -65,10 +65,15 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
   PARENT_BLOCK_NOT_IN_SAME_CONTENT("PARENT_BLOCK_NOT_IN_SAME_CONTENT",
       "Parent and child blocks have mismatched content", HttpStatus.BAD_REQUEST),
   // ai
-  INVALID_ANSWER("INVALID_ANSWER","An error occurred while processing the AI response. Please try again.",HttpStatus.BAD_REQUEST);
+  INVALID_ANSWER("INVALID_ANSWER","An error occurred while processing the AI response. Please try again.",HttpStatus.BAD_REQUEST),
+  CONTENT_NOT_EXIST_IN_CART("CONTENT_NOT_EXIST_IN_CART", "The requested content does not exist in the cart.", HttpStatus.NOT_FOUND),
+  // role
+
+  ROLE_NOT_FOUND("ROLE_NOT_FOUND", "System role configuration error. Please contact administrator.", HttpStatus.INTERNAL_SERVER_ERROR);
   String errorCode;
   String errorMessage;
   HttpStatus httpStatus;
+
 
   @Override
   public String getErrorCode() {

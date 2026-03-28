@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="0003-create-table-become_moderator" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="become_creator"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="become_creator">
+      <column name="id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true"  nullable="false"/>
+      </column>
+      <column name="user" type="bigint">
+        <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="user_become_creator"/>
+      </column>
+      <column name="status" type="VARCHAR(20)">
+        <constraints nullable="false" />
+      </column>
+        <column name="create_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
+    </createTable>
+  </changeSet>
+  <changeSet id="0004-create-table-message-and-images" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="message_and_images_become_moderator"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="message_and_images_become_creator">
+      <column name="id" type="bigint" autoIncrement="true">
+        <constraints primaryKey="true"  nullable="false"/>
+      </column>
+      <column name="become_creator" type="bigint">
+        <constraints nullable="false" referencedTableName="become_creator" referencedColumnNames="id" foreignKeyName="become_creator_status_thumbs"/>
+      </column>
+      <column name="message" type="TEXT">
+        <constraints nullable="false" />
+      </column>
+      <column name="thumb_url" type="TEXT" >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>

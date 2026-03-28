@@ -3,6 +3,14 @@ spring:
     name: study-hard
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+  ai:
+    openai:
+      api-key: ${OPEN_API_KEY}
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: never
   datasource:
     username: root
     password: root
@@ -26,7 +34,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 server:
   port: 8090
 jwt:
@@ -49,14 +60,7 @@ openapi:
     basic-auth:
       authorizationUrl: https://accounts.google.com/o/oauth2/v2/auth
       tokenUrl: https://oauth2.googleapis.com/token
-springdoc:
-  swagger-ui:
-    oauth:
-      use-basic-authentication-with-access-code-grant: true
-      client-id: ${GOOGLE_CLIENT_ID}
-      client-secret: ${GOOGLE_CLIENT_SECRET}
-      scopes:
-    oauth2-redirect-url: http://localhost:8090/swagger-ui/oauth2-redirect.html
+
 swagger:
   credentials:
     basic-auth:
@@ -67,3 +71,11 @@ swagger:
             password: ${PASSWORD_ACCESS_SWAGGER_2}
           - email: ${EMAIL_ACCESS_SWAGGER_3}
             password: ${PASSWORD_ACCESS_SWAGGER_3}
+api:
+  google:
+    token: https://oauth2.googleapis.com/token
+    accessToken:  https://www.googleapis.com/oauth2/v1/userinfo
+    clientId: ${GOOGLE_CLIENT_ID}
+    clientSecret: ${GOOGLE_CLIENT_SECRET}
+    grantType: authorization_code
+    redirectUri: http://localhost:8090/swagger-ui/oauth2-redirect.html

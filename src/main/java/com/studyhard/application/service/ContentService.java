@@ -29,6 +29,10 @@ public interface ContentService {
   public ContentReviewResponse reviewContent(ContentReviewRequest request);
 
   public void publishContent(String contentId);
+
+  public  void deleteItemsCart(Long contentId);
+
+  public  List<ContentDto> getAllContent(Pageable pageable);
 //  public Content getContentById(Long id);
 //
 //  public Content updateContent(Long id, UpdateContentRequest updateContentRequest);

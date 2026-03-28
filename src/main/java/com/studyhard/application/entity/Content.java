@@ -50,6 +50,7 @@ public class Content {
   @Column(name = "price", precision = 19, scale = 2)
   BigDecimal price;
 
+  String thumb;
   @Column(name = "view_count")
   @Builder.Default
   Long viewCount = 0L;

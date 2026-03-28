@@ -6,7 +6,10 @@
 
   <!--  init table-->
   <include file="db/changelog/ddl/ddl-0001-init-table.xml"/>
-
+  <include file="db/changelog/ddl/ddl-0002-spring-memory.xml" />
+  <include file="/db/changelog/ddl/ddl-0003-become_creator.xml" />
+  <include file="/db/changelog/ddl/ddl-0004-add-feedback-become_creator.xml" />
+  <include file="/db/changelog/ddl/ddl-0005-add-column-thumb-content.xml" />
 <!--  init-data-->
   <include file="/db/changelog/data/data-0001-data.xml"/>
 

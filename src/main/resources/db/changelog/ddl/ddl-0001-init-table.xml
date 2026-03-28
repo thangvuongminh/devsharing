@@ -8,10 +8,10 @@
   <changeSet id="20260320-001" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
-        <tableExists tableName="user"/>
+        <tableExists tableName="users"/>
       </not>
     </preConditions>
-    <createTable tableName="user">
+    <createTable tableName="users">
       <column name="id" type="BIGINT" autoIncrement="true">
         <constraints primaryKey="true" nullable="false"/>
       </column>
@@ -33,6 +33,7 @@
       <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-002" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -49,6 +50,7 @@
       <column name="description" type="VARCHAR(255)"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-003" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -60,7 +62,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_user_role_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" foreignKeyName="fk_user_role_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="role_id" type="BIGINT">
         <constraints nullable="false" foreignKeyName="fk_user_role_role" referencedTableName="role" referencedColumnNames="id"/>
@@ -69,6 +71,7 @@
       <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-004" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -80,7 +83,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" unique="true" foreignKeyName="fk_profile_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" unique="true" foreignKeyName="fk_profile_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="birthdate" type="DATE"/>
       <column name="gender" type="VARCHAR(10)"/>
@@ -96,6 +99,7 @@
       <column name="updated_at" type="TIMESTAMP"  defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-005" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -117,6 +121,7 @@
       <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-006" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -131,7 +136,7 @@
         <constraints nullable="false" foreignKeyName="fk_content_category" referencedTableName="category" referencedColumnNames="id"/>
       </column>
       <column name="creator_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_content_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" foreignKeyName="fk_content_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="title" type="VARCHAR(255)" />
       <column name="description" type="TEXT"/>
@@ -145,6 +150,7 @@
       <column name="updated_at" type="TIMESTAMP"  defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-007" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -170,6 +176,7 @@
       <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-008" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -184,7 +191,7 @@
         <constraints nullable="false" foreignKeyName="fk_review_content_main" referencedTableName="content" referencedColumnNames="id"/>
       </column>
       <column name="moderator_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_review_moderator" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" foreignKeyName="fk_review_moderator" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="action" type="VARCHAR(50)"/>
       <column name="feedback" type="TEXT"/>
@@ -203,7 +210,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="true" foreignKeyName="fk_user_verification_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="true" foreignKeyName="fk_user_verification_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="verification_code" type="VARCHAR(255)">
         <constraints nullable="false"/>
@@ -233,7 +240,7 @@
         <constraints primaryKey="true"/>
       </column>
       <column name="userId" type="bigint">
-        <constraints foreignKeyName="fk_support_ticket_userid" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints foreignKeyName="fk_support_ticket_userid" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="issue" type="TEXT">
         <constraints nullable="false"/>
@@ -254,7 +261,7 @@
         <constraints primaryKey="true"/>
       </column>
       <column name="userId" type="bigint">
-        <constraints foreignKeyName="fk_support_ticket_message_userid" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints foreignKeyName="fk_support_ticket_message_userid" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="message" type="TEXT">
         <constraints nullable="false"/>
@@ -265,6 +272,7 @@
       <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-011" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -276,7 +284,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_transaction_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" foreignKeyName="fk_transaction_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="type" type="VARCHAR(50)">
         <constraints nullable="false"/>
@@ -295,6 +303,7 @@
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-012" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -319,6 +328,7 @@
       <column name="updated_by" type="BIGINT"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-013" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -330,7 +340,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" unique="true" foreignKeyName="fk_wallet_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" unique="true" foreignKeyName="fk_wallet_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="balance" type="DECIMAL(19,2)" defaultValueNumeric="0.00">
         <constraints nullable="false"/>
@@ -340,6 +350,7 @@
       <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
+
   <changeSet id="20260320-014" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
@@ -351,7 +362,7 @@
         <constraints primaryKey="true" nullable="false"/>
       </column>
       <column name="user_id" type="BIGINT">
-        <constraints nullable="false" foreignKeyName="fk_withdrawal_user" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints nullable="false" foreignKeyName="fk_withdrawal_user" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="amount" type="DECIMAL(19,2)">
         <constraints nullable="false"/>
@@ -371,7 +382,7 @@
       <column name="note" type="TEXT"/>
       <column name="admin_note" type="TEXT"/>
       <column name="reviewed_by" type="BIGINT">
-        <constraints foreignKeyName="fk_withdrawal_reviewer" referencedTableName="user" referencedColumnNames="id"/>
+        <constraints foreignKeyName="fk_withdrawal_reviewer" referencedTableName="users" referencedColumnNames="id"/>
       </column>
       <column name="reviewed_at" type="TIMESTAMP"/>
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>

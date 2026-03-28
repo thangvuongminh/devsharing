@@ -16,10 +16,12 @@ import java.util.List;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ContentDto {
+  Long id;
   String title;
   String description;
   ContentLevel contentLevel;
   Long creatorId;
+  String thumb;
   CategoryDto category;
   BigDecimal price;
   ContentStatus status;

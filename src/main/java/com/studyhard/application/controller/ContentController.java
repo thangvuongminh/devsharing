@@ -12,17 +12,22 @@ import com.studyhard.application.response.ApiResponse;
 import com.studyhard.application.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Stack;
+import javax.print.attribute.standard.Media;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,23 +43,29 @@ public class ContentController {
 
   ContentService contentService;
 
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Create content")
   @PreAuthorize("hasRole('CREATOR')")
   public ResponseEntity<ApiResponse<ContentDto>> createContent(
-      @RequestBody CreateContentRequest createContentRequest) {
+   @Valid @ModelAttribute CreateContentRequest createContentRequest) {
     ContentDto contentDto = contentService.createContent(createContentRequest);
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(contentDto));
   }
 
   @GetMapping("/{contentId}")
   @PreAuthorize("hasRole('CREATOR')")
-  @Operation(summary = "Get content by id", description = "Get detailed content information")
+  @Operation(summary = "Get content by id only user", description = "Get detailed content information")
   public ResponseEntity<ApiResponse<ContentDto>> getContentById(@PathVariable long contentId) {
     ContentDto contentDto = contentService.getContentById(contentId);
     return ResponseEntity.ok().body(ApiResponse.success(contentDto));
   }
-
+  @GetMapping("/all/contests")
+  @PreAuthorize("hasRole('CREATOR')")
+  @Operation(summary = "Get all contents by id only user", description = "Get all contents")
+  public ResponseEntity<ApiResponse<List<ContentDto>>> getAllContents(Pageable pageable) {
+    List<ContentDto> contentDto = contentService.getAllContent(pageable);
+    return ResponseEntity.ok().body(ApiResponse.success(contentDto));
+  }
   @GetMapping("/add/cart/{contentId}")
   @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
   @Operation(summary = "Add content  to cart")
@@ -109,5 +120,13 @@ public class ContentController {
   public ResponseEntity<ApiResponse<Void>> searchContentAnyUser(@RequestBody ContentSearchRequest contentSearchRequest  ) {
     contentService.searchContentAnyUsers(contentSearchRequest);
     return ResponseEntity.ok().body(ApiResponse.success(null));
+  }
+
+  @DeleteMapping("/{contentId}/delete")
+  @Operation(summary = "DELETE CONTENT")
+  @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
+  public ResponseEntity<ApiResponse<String>> deleteContent(@PathVariable Long contentId  ) {
+    contentService.deleteItemsCart(contentId);
+    return ResponseEntity.ok().body(ApiResponse.success("Dele content in cart success"));
   }
 }

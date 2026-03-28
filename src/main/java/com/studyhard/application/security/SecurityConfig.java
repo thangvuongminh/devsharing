@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -64,38 +65,41 @@ public class SecurityConfig {
             (authorize) -> authorize.requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
                 .permitAll()
                 // user account
-                .requestMatchers("user/account/**").permitAll()
-                .requestMatchers("chat/**").permitAll()
+                .requestMatchers("/user/account/**").permitAll()
+                .requestMatchers("/chat/**").permitAll()
                 .anyRequest().authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(
             jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)))
         .addFilterAfter(new CustomFilter(redisTemplate), BearerTokenAuthenticationFilter.class)
-        .formLogin(Customizer.withDefaults());
+        .formLogin(AbstractHttpConfigurer::disable)
+        .logout(AbstractHttpConfigurer::disable)
+    ;
     ;
     return http.build();
   }
 
-  @Bean
-  @Order(2)
-  public SecurityFilterChain securityFilterChainGoogle(HttpSecurity http
-  ) throws Exception {
-    http.csrf(AbstractHttpConfigurer::disable)
-        .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()));
-            http.securityMatcher("user/account/google","/v3/api-docs/**", "/swagger-ui/**").authorizeHttpRequests(
-                (authorize) -> authorize.
-                    requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll().
-                    requestMatchers(
-                    request -> {
-                      String bearerToken = request.getHeader("Authorization");
-                      return bearerToken != null && bearerToken.startsWith("Bearer ");
-                    }
-                ).permitAll().anyRequest().authenticated()
-            );
-    return http.build();
-  }
+//  @Bean
+//  @Order(2)
+//  public SecurityFilterChain securityFilterChainGoogle(HttpSecurity http
+//  ) throws Exception {
+//    http.csrf(AbstractHttpConfigurer::disable)
+//        .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()));
+//            http.securityMatcher("/user/account/google","/v3/api-docs/**", "/swagger-ui/**").authorizeHttpRequests(
+//                (authorize) -> authorize.
+//                    requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll().
+//                    requestMatchers(
+//                    request -> {
+//                      String bearerToken = request.getHeader("Authorization");
+//                      return bearerToken != null && bearerToken.startsWith("Bearer ");
+//                    }
+//                ).permitAll().anyRequest().authenticated()
+//            );
+//    return http.build();
+//  }
 
   @Bean
   @Order(Ordered.HIGHEST_PRECEDENCE)
+  @Profile("!local")
   public SecurityFilterChain securityFilterChainSwagger(HttpSecurity http
   ) throws Exception {
     http.csrf(AbstractHttpConfigurer::disable)

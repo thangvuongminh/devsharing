@@ -11,7 +11,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserRegistrationResponse {
-  String userName;
+  String username;
   String email;
-  String accessToken;
 }

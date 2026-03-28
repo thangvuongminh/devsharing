@@ -7,6 +7,7 @@ import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.repository.CategoryRepository;
 import com.studyhard.application.service.CategoryService;
+import java.time.Instant;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

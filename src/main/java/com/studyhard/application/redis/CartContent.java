@@ -1,6 +1,7 @@
 package com.studyhard.application.redis;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -23,5 +24,5 @@ import org.springframework.data.redis.core.RedisHash;
 public class CartContent implements Serializable {
   @Id
   Long userId;
-  LinkedHashSet<Long> contentIds;
+  LinkedList<Long> contentIds;
 }

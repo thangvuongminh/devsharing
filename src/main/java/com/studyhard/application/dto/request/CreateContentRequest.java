@@ -9,6 +9,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
+import org.springframework.web.multipart.MultipartFile;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,6 +27,8 @@ public class CreateContentRequest {
   @NotNull(message = "{content.price.notNull}")
   @DecimalMin(value = "0.0",message = "{content.price.min}")
   BigDecimal price;
+  @NotNull(message = "{content.thumb.notNull}")
+  MultipartFile thumb;
   @NotNull(message = "{content.categoryId.notNull}")
   Long categoryId;
 }

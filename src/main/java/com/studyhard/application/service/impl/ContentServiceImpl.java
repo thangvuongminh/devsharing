@@ -15,6 +15,7 @@ import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mapper.ContentMapper;
 import com.studyhard.application.model.ContentStatus;
 import com.studyhard.application.model.ReviewAction;
+import com.studyhard.application.model.TypeFile;
 import com.studyhard.application.redis.CartContent;
 import com.studyhard.application.redis.repository.CardContentRepository;
 import com.studyhard.application.repository.CategoryRepository;
@@ -23,11 +24,13 @@ import com.studyhard.application.repository.ContentReviewRepository;
 import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.service.CategoryService;
 import com.studyhard.application.service.ContentService;
+import com.studyhard.application.service.FileStorageService;
 import com.studyhard.application.utils.UserExtractor;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,13 +56,14 @@ public class ContentServiceImpl implements ContentService {
   CardContentRepository cardContentRepository;
   ContentReviewRepository contentReviewRepository;
   UserRepository userRepository;
-
+  FileStorageService fileStorageService;
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {
     Category category = categoryService.getCategoryById(createContentRequest.getCategoryId());
-
     User user = userRepository.findById(UserExtractor.getUserId()).get();
+    List<String> fileName=fileStorageService.saveFile(List.of(createContentRequest.getThumb()), TypeFile.CONTENT);
+
     Content content = Content.builder()
         .creator(user)
         .description(createContentRequest.getDescription())
@@ -67,11 +71,13 @@ public class ContentServiceImpl implements ContentService {
         .title(createContentRequest.getTitle())
         .category(category)
         .level(createContentRequest.getContentLevel())
+        .thumb(fileName.get(0))
         .status(ContentStatus.DRAFT)
         .createdAt(Instant.now())
         .updatedAt(Instant.now())
         .build();
     contentRepository.save(content);
+
     return contentMapper.toContentDto(content);
   }
 
@@ -93,7 +99,7 @@ public class ContentServiceImpl implements ContentService {
   @Transactional
   public CartContent createCart() {
     CartContent cartContent = CartContent.builder()
-        .contentIds(new LinkedHashSet<>())
+        .contentIds(new LinkedList<>(List.of(0L)))
         .userId(UserExtractor.getUserId())
         .build();
     cardContentRepository.save(cartContent);
@@ -108,13 +114,29 @@ public class ContentServiceImpl implements ContentService {
     );
     CartContent cartContent = cardContentRepository.findById(UserExtractor.getUserId())
         .orElse(createCart());
-    LinkedHashSet<Long> allContentIds = cartContent.getContentIds();
-    if (allContentIds.contains(contentId)) {
-      throw new StudyHardException(ExceptionEnum.CONTENT_ALREADY_YOUR_CAR);
-    }
-    allContentIds.add(contentId);
+    LinkedList<Long> allContentIds = cartContent.getContentIds();
+    allContentIds.remove(contentId);
+    allContentIds.addFirst(contentId);
     cartContent.setContentIds(allContentIds);
     cardContentRepository.save(cartContent);
+  }
+  @Override
+  public void deleteItemsCart(Long contentId) {
+    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    CartContent cartContent = cardContentRepository.findById(UserExtractor.getUserId())
+        .orElse(createCart());
+    LinkedList<Long> allContentIds = cartContent.getContentIds();
+    if (!allContentIds.contains(contentId)) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
+    }
+    allContentIds.remove(contentId);
+    cardContentRepository.save(cartContent);
+  }
+
+  @Override
+  public List<ContentDto> getAllContent(Pageable pageable) {
+    List<Content> contents = contentRepository.findAllByCreator_Id(UserExtractor.getUserId());
+    return contents.stream().map(contentMapper::toContentDto).toList();
   }
 
   @Override
@@ -122,12 +144,19 @@ public class ContentServiceImpl implements ContentService {
     Long userId = UserExtractor.getUserId();
     Optional<CartContent> cartContent = cardContentRepository.findById(userId);
     if (cartContent.isPresent()) {
-      LinkedHashSet<Long> allContentIds = cartContent.get().getContentIds();
-      List<Content> contents = contentRepository.findBySetContentId(allContentIds);
+      LinkedList<Long> allContentIds = cartContent.get().getContentIds();
+      List<Content> contents = new ArrayList<>();
+      for (Long contentId : allContentIds) {
+        if(contentId.equals(0L)) {
+          continue;
+        }
+        contents.add(contentRepository.findById(contentId).orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)));
+      }
       return contents.stream().map(contentMapper::toContentSummaryDto).toList();
     }
     return List.of();
   }
+
 
   @Override
   @Transactional
@@ -139,11 +168,10 @@ public class ContentServiceImpl implements ContentService {
     if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
-    if (!(content.getStatus().equals(ContentStatus.REJECTED)) && !(content.getStatus()
-        .equals(ContentStatus.PENDING_REVIEW))) {
+    if (!(content.getStatus().equals(ContentStatus.DRAFT))) {
       throw new StudyHardException(ExceptionEnum.CONTENT_REVIEW_OR_REJECTION);
     }
-    content.setStatus(ContentStatus.REJECTED);
+    content.setStatus(ContentStatus.PENDING_REVIEW);
     contentRepository.save(content);
     return contentMapper.toContentSummaryDto(content);
   }
@@ -189,10 +217,14 @@ public class ContentServiceImpl implements ContentService {
     contentRepository.save(content);
   }
 
+
+
   @Override
   @Transactional(readOnly = true)
   public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest) {
 
     return null;
   }
+
+
 }

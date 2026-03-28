@@ -1,5 +1,6 @@
 package com.studyhard.application.service;
 
+import com.studyhard.application.dto.request.BecomeCreatorRequest;
 import com.studyhard.application.dto.request.ChangePasswordRequest;
 import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
@@ -28,5 +29,7 @@ public interface UserAccountService {
 
   public void changePassword(ChangePasswordRequest changePasswordRequest);
 
-  public  UserLoginResponse loginByGoogle(String accessToken);
+  public  UserLoginResponse loginByGoogle(String code);
+
+  public  String becomeCreator(BecomeCreatorRequest becomeCreatorRequest);
 }

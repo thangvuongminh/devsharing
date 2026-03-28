@@ -1,5 +1,6 @@
 package com.studyhard.application.controller;
 
+import com.studyhard.application.dto.request.BecomeCreatorRequest;
 import com.studyhard.application.dto.request.ChangePasswordRequest;
 import com.studyhard.application.dto.request.ForgotPasswordRequest;
 import com.studyhard.application.dto.request.ResetPasswordRequest;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -100,8 +102,8 @@ public class UserAccountController {
     return ResponseEntity.ok().body(ApiResponse.success("change password successfully!"));
   }
 
-  @GetMapping("/google")
-  public ResponseEntity<ApiResponse<UserLoginResponse>> loginGoogle(HttpServletRequest request,HttpServletResponse response) {
+  @PostMapping("/google")
+  public ResponseEntity<ApiResponse<UserLoginResponse>> loginGoogle(@RequestBody String code,  HttpServletRequest request,HttpServletResponse response) {
     String bearerToken = request.getHeader("Authorization");
     String accessToken=bearerToken.substring(7);
     UserLoginResponse userLoginResponse= userAccountService.loginByGoogle(accessToken);
@@ -112,4 +114,9 @@ public class UserAccountController {
         .build();
     return ResponseEntity.ok().body(ApiResponse.success(userLoginResponse));
   }
+//  @PostMapping("/become/creator")
+//  public ResponseEntity<ApiResponse<String>> becomeCreator(@ModelAttribute BecomeCreatorRequest request) {
+//    String response=  userAccountService.becomeCreator(request);
+//    return  ResponseEntity.ok().body(ApiResponse.success(response));
+//  }
 }

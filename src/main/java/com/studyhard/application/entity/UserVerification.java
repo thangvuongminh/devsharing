@@ -38,14 +38,6 @@ public class UserVerification {
   @Column(name = "created_at", updatable = false)
   Instant createdAt;
 
-  @Column(name = "updated_at")
-  Instant updatedAt;
-
-  @Column(name = "created_by")
-  Long createdBy;
-
-  @Column(name = "updated_by")
-  Long updatedBy;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
