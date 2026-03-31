@@ -7,5 +7,6 @@ public enum ContentStatus {
   APPROVED,
   REJECTED,
   PUBLISHED,
+  PREMIUM,
   ARCHIVED,
 }

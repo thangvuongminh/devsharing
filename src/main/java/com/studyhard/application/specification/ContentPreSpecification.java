@@ -15,7 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ContentPreSpecification {
 
-  public static Specification<Content> withFiltersByAuthor(ContentSearchRequest contentSearchRequest) {
+  public static Specification<Content> withFiltersByAuthor() {
     return (root, criteriaQuery, criteriaBuilder) -> {
       return criteriaBuilder.equal(root.get("creatorId"), UserExtractor.getUserId());
     };
@@ -28,38 +28,31 @@ public class ContentPreSpecification {
         String keyword = "%" +  contentSearchRequest.getKeyword() + "%";
         Predicate title= criteriaBuilder.like(root.get("title"), keyword);
         Predicate description= criteriaBuilder.like(root.get("description"), keyword);
+        predicates.add(criteriaBuilder.or(title,description));
       }
       if (contentSearchRequest.getCategoryId() != null) {
-        Predicate predicateCategory = criteriaBuilder.equal(root.get("categoryId"), contentSearchRequest.getCategoryId());
+        Predicate   predicateCategory = criteriaBuilder.equal(root.get("categoryId"), contentSearchRequest.getCategoryId());
         predicates.add(predicateCategory);
       }
-      if (contentSearchRequest.getStatus() != null) {
-        Predicate predicateStatus = criteriaBuilder.equal(root.get("status"), contentSearchRequest.getStatus());
-        predicates.add(predicateStatus);
-      }
+      Predicate predicateStatus= criteriaBuilder.equal(root.get("status"), ContentStatus.PUBLISHED);
+      predicates.add(predicateStatus);
       if(contentSearchRequest.getMinPrice()!=null){
         Predicate predicateMinPrice = criteriaBuilder.greaterThanOrEqualTo(root.get("price"), contentSearchRequest.getMinPrice());
         predicates.add(predicateMinPrice);
       }
       if(contentSearchRequest.getMaxPrice()!=null){
         Predicate predicateMaxPrice= criteriaBuilder.lessThanOrEqualTo(root.get("price"), contentSearchRequest.getMaxPrice());
+        predicates.add(predicateMaxPrice);
       }
       if(contentSearchRequest.getMinViewCount()!=null){
-        Predicate  predicateMinView = criteriaBuilder.equal(root.get("viewCount"), contentSearchRequest.getMinViewCount());
+        Predicate  predicateMinView = criteriaBuilder.greaterThanOrEqualTo(root.get("viewCount"), contentSearchRequest.getMinViewCount());
+        predicates.add(predicateMinView);
+      }
+      if(contentSearchRequest.getMaxViewCount()!=null){
+        Predicate  predicateMinView = criteriaBuilder.lessThanOrEqualTo(root.get("viewCount"), contentSearchRequest.getMinViewCount());
         predicates.add(predicateMinView);
       }
       return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-    };
-  }
-  public static Specification<Content> withFiltersStatus(ContentSearchRequest contentSearchRequest,Boolean filterByAuthor) {
-    return (root, criteriaQuery, criteriaBuilder) -> {
-      if (!filterByAuthor) {
-        return criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), ContentStatus.PUBLISHED));
-      }
-      if(contentSearchRequest.getStatus()!=null ){
-        return criteriaBuilder.and(criteriaBuilder.equal(root.get("status"), contentSearchRequest.getStatus()));
-      }
-      return null;
     };
   }
 }

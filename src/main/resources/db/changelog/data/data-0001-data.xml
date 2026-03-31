@@ -3,153 +3,95 @@
   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
+  <!-- SEED ROLES -->
   <changeSet id="20260320-seed-role" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM role WHERE id IN (1,2,3,4)</sqlCheck>
+    </preConditions>
     <insert tableName="role">
-      <column name="id" valueNumeric="1"/>
-      <column name="role_name" value="ADMIN"/>
-      <column name="description" value="Quản trị viên toàn quyền hệ thống"/>
+      <column name="id" valueNumeric="1"/><column name="role_name" value="ADMIN"/><column name="description" value="Quản trị viên toàn quyền hệ thống"/>
     </insert>
     <insert tableName="role">
-      <column name="id" valueNumeric="2"/>
-      <column name="role_name" value="MODERATOR"/>
-      <column name="description" value="Người kiểm duyệt nội dung và yêu cầu rút tiền"/>
+      <column name="id" valueNumeric="2"/><column name="role_name" value="MODERATOR"/><column name="description" value="Người kiểm duyệt nội dung và yêu cầu rút tiền"/>
     </insert>
     <insert tableName="role">
-      <column name="id" valueNumeric="3"/>
-      <column name="role_name" value="CREATOR"/>
-      <column name="description" value="Người sáng tạo nội dung, giảng viên"/>
+      <column name="id" valueNumeric="3"/><column name="role_name" value="CREATOR"/><column name="description" value="Người sáng tạo nội dung, giảng viên"/>
     </insert>
     <insert tableName="role">
-      <column name="id" valueNumeric="4"/>
-      <column name="role_name" value="CONSUMER"/>
-      <column name="description" value="Người mua nội dung, học viên"/>
+      <column name="id" valueNumeric="4"/><column name="role_name" value="CONSUMER"/><column name="description" value="Người mua nội dung, học viên"/>
     </insert>
   </changeSet>
 
+  <!-- SEED USERS -->
   <changeSet id="20260320-seed-user" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM users WHERE id = 1</sqlCheck>
+    </preConditions>
     <insert tableName="users">
-      <column name="id" valueNumeric="1"/>
-      <column name="username" value="admin"/>
-      <column name="email" value="admin@studyhard.com"/>
-      <column name="password" value="$2a$10$hashedpassword1"/>
-      <column name="full_name" value="Super Admin"/>
-      <column name="phone_number" value="0901000001"/>
-      <column name="status" value="ACTIVE"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="1"/><column name="username" value="admin"/><column name="email" value="admin@studyhard.com"/><column name="password" value="$2a$10$hashedpassword1"/><column name="full_name" value="Super Admin"/><column name="phone_number" value="0901000001"/><column name="status" value="ACTIVE"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="users">
-      <column name="id" valueNumeric="2"/>
-      <column name="username" value="moderator"/>
-      <column name="email" value="moderator@studyhard.com"/>
-      <column name="password" value="$2a$10$hashedpassword2"/>
-      <column name="full_name" value="Mod One"/>
-      <column name="phone_number" value="0901000002"/>
-      <column name="status" value="ACTIVE"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="2"/><column name="username" value="moderator"/><column name="email" value="moderator@studyhard.com"/><column name="password" value="$2a$10$hashedpassword2"/><column name="full_name" value="Mod One"/><column name="phone_number" value="0901000002"/><column name="status" value="ACTIVE"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+    </insert>
+    <!-- Thêm tương tự cho các user id 3, 4, 5... -->
+    <insert tableName="users">
+      <column name="id" valueNumeric="3"/><column name="username" value="consumer1"/><column name="email" value="consumer1@studyhard.com"/><column name="password" value="$2a$10$hashedpassword3"/><column name="full_name" value="Nguyen Van A"/><column name="phone_number" value="0901000003"/><column name="status" value="ACTIVE"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="users">
-      <column name="id" valueNumeric="3"/>
-      <column name="username" value="consumer1"/>
-      <column name="email" value="consumer1@studyhard.com"/>
-      <column name="password" value="$2a$10$hashedpassword3"/>
-      <column name="full_name" value="Nguyen Van A"/>
-      <column name="phone_number" value="0901000003"/>
-      <column name="status" value="ACTIVE"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="4"/><column name="username" value="consumer2"/><column name="email" value="consumer2@studyhard.com"/><column name="password" value="$2a$10$hashedpassword4"/><column name="full_name" value="Tran Thi B"/><column name="phone_number" value="0901000004"/><column name="status" value="ACTIVE"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="users">
-      <column name="id" valueNumeric="4"/>
-      <column name="username" value="consumer2"/>
-      <column name="email" value="consumer2@studyhard.com"/>
-      <column name="password" value="$2a$10$hashedpassword4"/>
-      <column name="full_name" value="Tran Thi B"/>
-      <column name="phone_number" value="0901000004"/>
-      <column name="status" value="ACTIVE"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
-    </insert>
-    <insert tableName="users">
-      <column name="id" valueNumeric="5"/>
-      <column name="username" value="creator1"/>
-      <column name="email" value="creator1@studyhard.com"/>
-      <column name="password" value="$2a$10$hashedpassword5"/>
-      <column name="full_name" value="Le Van C"/>
-      <column name="phone_number" value="0901000005"/>
-      <column name="status" value="ACTIVE"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="5"/><column name="username" value="creator1"/><column name="email" value="creator1@studyhard.com"/><column name="password" value="$2a$10$hashedpassword5"/><column name="full_name" value="Le Van C"/><column name="phone_number" value="0901000005"/><column name="status" value="ACTIVE"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
   </changeSet>
 
+  <!-- SEED USER_ROLE -->
   <changeSet id="20260320-seed-user-role" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM user_role WHERE user_id = 1 AND role_id = 1</sqlCheck>
+    </preConditions>
     <insert tableName="user_role">
-      <column name="user_id" valueNumeric="1"/><column name="role_id" valueNumeric="1"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="user_id" valueNumeric="1"/><column name="role_id" valueNumeric="1"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="user_role">
-      <column name="user_id" valueNumeric="2"/><column name="role_id" valueNumeric="2"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="user_id" valueNumeric="2"/><column name="role_id" valueNumeric="2"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="user_role">
-      <column name="user_id" valueNumeric="3"/><column name="role_id" valueNumeric="4"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="user_id" valueNumeric="3"/><column name="role_id" valueNumeric="4"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="user_role">
-      <column name="user_id" valueNumeric="4"/><column name="role_id" valueNumeric="4"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="user_id" valueNumeric="4"/><column name="role_id" valueNumeric="4"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="user_role">
-      <column name="user_id" valueNumeric="5"/><column name="role_id" valueNumeric="3"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="user_id" valueNumeric="5"/><column name="role_id" valueNumeric="3"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
   </changeSet>
 
+  <!-- SEED CATEGORY -->
   <changeSet id="20260320-seed-category" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM category WHERE id = 1</sqlCheck>
+    </preConditions>
     <insert tableName="category">
-      <column name="id" valueNumeric="1"/><column name="name" value="Java"/><column name="slug" value="java"/>
-      <column name="description" value="Các khóa học về lập trình Java"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="1"/><column name="name" value="Java"/><column name="slug" value="java"/><column name="description" value="Các khóa học về lập trình Java"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="category">
-      <column name="id" valueNumeric="2"/><column name="name" value="Web Development"/><column name="slug" value="web-development"/>
-      <column name="description" value="Phát triển Frontend và Backend"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="id" valueNumeric="2"/><column name="name" value="Web Development"/><column name="slug" value="web-development"/><column name="description" value="Phát triển Frontend và Backend"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
   </changeSet>
 
+  <!-- SEED CONTENT -->
   <changeSet id="20260320-seed-content" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <sqlCheck expectedResult="0">SELECT COUNT(*) FROM content WHERE title = 'Lập trình Java căn bản'</sqlCheck>
+    </preConditions>
     <insert tableName="content">
-      <column name="category_id" valueNumeric="1"/>
-      <column name="creator_id" valueNumeric="5"/>
-      <column name="title" value="Lập trình Java căn bản"/>
-      <column name="description" value="Khóa học Java dành cho người mới bắt đầu từ con số 0."/>
-      <column name="status" value="PUBLISHED"/>
-      <column name="level" value="BEGINNER"/>
-      <column name="price" valueNumeric="499000.00"/>
-      <column name="view_count" valueNumeric="150"/>
-      <column name="purchase_count" valueNumeric="25"/>
-      <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="category_id" valueNumeric="1"/><column name="creator_id" valueNumeric="5"/><column name="title" value="Lập trình Java căn bản"/><column name="description" value="Khóa học Java dành cho người mới bắt đầu từ con số 0."/><column name="status" value="PUBLISHED"/><column name="level" value="BEGINNER"/><column name="price" valueNumeric="499000.00"/><column name="view_count" valueNumeric="150"/><column name="purchase_count" valueNumeric="25"/><column name="published_at" valueComputed="CURRENT_TIMESTAMP"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
     <insert tableName="content">
-      <column name="category_id" valueNumeric="2"/>
-      <column name="creator_id" valueNumeric="5"/>
-      <column name="title" value="Fullstack Web với Next.js"/>
-      <column name="description" value="Học cách xây dựng ứng dụng web hiện đại, chuẩn SEO."/>
-      <column name="status" value="PUBLISHED"/>
-      <column name="level" value="ADVANCED"/>
-      <column name="price" valueNumeric="1200000.00"/>
-      <column name="view_count" valueNumeric="340"/>
-      <column name="purchase_count" valueNumeric="42"/>
-      <column name="published_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
-      <column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
+      <column name="category_id" valueNumeric="2"/><column name="creator_id" valueNumeric="5"/><column name="title" value="Fullstack Web với Next.js"/><column name="description" value="Học cách xây dựng ứng dụng web hiện đại, chuẩn SEO."/><column name="status" value="PUBLISHED"/><column name="level" value="ADVANCED"/><column name="price" valueNumeric="1200000.00"/><column name="view_count" valueNumeric="340"/><column name="purchase_count" valueNumeric="42"/><column name="published_at" valueComputed="CURRENT_TIMESTAMP"/><column name="created_at" valueComputed="CURRENT_TIMESTAMP"/><column name="updated_at" valueComputed="CURRENT_TIMESTAMP"/>
     </insert>
   </changeSet>
 

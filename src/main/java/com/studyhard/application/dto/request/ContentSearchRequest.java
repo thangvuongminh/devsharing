@@ -31,14 +31,4 @@ public class ContentSearchRequest {
   Long maxViewCount;
   Long minPurchaseCount;
   Long maxPurchaseCount;
-
-  // Sorting
-  List<String> sortBy; // title, createdAt, updatedAt, publishedAt, viewCount, purchaseCount, price
-  String sortDirection; // asc, desc
-
-  // Pagination
-  @Builder.Default
-  Integer page=1;
-  @Builder.Default
-  Integer size=5;
 }

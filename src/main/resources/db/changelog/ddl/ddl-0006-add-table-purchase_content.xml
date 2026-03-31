@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="0006-add-table-purchase_content" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <tableExists tableName="purchase_content"/>
+      </not>
+    </preConditions>
+
+    <createTable tableName="purchase_content">
+      <column name="id" autoIncrement="true" type="bigint">
+        <constraints primaryKey="true" />
+      </column>
+      <column name="user" type="bigint" >
+        <constraints nullable="false" referencedTableName="users" referencedColumnNames="id" foreignKeyName="fk_purchase_content_by_user" />
+      </column>
+      <column name="content" type="bigint"   >
+        <constraints nullable="false" referencedTableName="content" referencedColumnNames="id" foreignKeyName="fk_purchase_content_by_content" />
+      </column>
+      <column name="transaction" type="bigint">
+        <constraints nullable="false" referencedTableName="transaction" referencedColumnNames="id" foreignKeyName="fk_purchase_content_transaction" />
+      </column>
+      <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP" />
+    </createTable>
+  </changeSet>
+
+</databaseChangeLog>

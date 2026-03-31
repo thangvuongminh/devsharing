@@ -228,51 +228,6 @@
       <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
     </createTable>
   </changeSet>
-
-  <changeSet id="20260313-004" author="thang-anonymous">
-    <preConditions onFail="MARK_RAN" >
-      <not>
-        <tableExists tableName="support_ticket"/>
-      </not>
-    </preConditions>
-    <createTable tableName="support_ticket">
-      <column name="id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true"/>
-      </column>
-      <column name="userId" type="bigint">
-        <constraints foreignKeyName="fk_support_ticket_userid" referencedTableName="users" referencedColumnNames="id"/>
-      </column>
-      <column name="issue" type="TEXT">
-        <constraints nullable="false"/>
-      </column>
-      <column name="status" type="varchar(50)" defaultValue="Received"/>
-      <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
-    </createTable>
-  </changeSet>
-
-  <changeSet id="20260320-010" author="thang-anonymous">
-    <preConditions onFail="MARK_RAN">
-      <not>
-        <tableExists tableName="ticket_message"/>
-      </not>
-    </preConditions>
-    <createTable tableName="ticket_message">
-      <column name="id" type="bigint" autoIncrement="true">
-        <constraints primaryKey="true"/>
-      </column>
-      <column name="userId" type="bigint">
-        <constraints foreignKeyName="fk_support_ticket_message_userid" referencedTableName="users" referencedColumnNames="id"/>
-      </column>
-      <column name="message" type="TEXT">
-        <constraints nullable="false"/>
-      </column>
-      <column name="support_ticket" type="bigint">
-        <constraints foreignKeyName="fk_support_ticket_message" referencedTableName="support_ticket" referencedColumnNames="id"/>
-      </column>
-      <column name="create_at" type="timestamp" defaultValueComputed="CURRENT_TIMESTAMP"/>
-    </createTable>
-  </changeSet>
-
   <changeSet id="20260320-011" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>

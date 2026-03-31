@@ -6,6 +6,11 @@
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
   <changeSet id="0005-add-thumb_content" author="thang-anonymous">
+    <preConditions onFail="MARK_RAN">
+      <not>
+        <columnExists tableName="content" columnName="thumb"/>
+      </not>
+    </preConditions>
     <addColumn tableName="content">
       <column name="thumb" type="TEXT"/>
     </addColumn>

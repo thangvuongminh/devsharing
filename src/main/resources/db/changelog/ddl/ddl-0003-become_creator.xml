@@ -28,7 +28,7 @@
   <changeSet id="0004-create-table-message-and-images" author="thang-anonymous">
     <preConditions onFail="MARK_RAN">
       <not>
-        <tableExists tableName="message_and_images_become_moderator"/>
+        <tableExists tableName="message_and_images_become_creator"/>
       </not>
     </preConditions>
 

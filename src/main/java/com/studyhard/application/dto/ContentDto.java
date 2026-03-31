@@ -31,5 +31,5 @@ public class ContentDto {
   Instant publishedAt;
   Instant createdAt;
   Instant updatedAt;
-  List<Block> blocks;
+  List<BlockDto> blocks;
 }

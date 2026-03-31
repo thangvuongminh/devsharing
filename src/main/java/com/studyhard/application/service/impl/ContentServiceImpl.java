@@ -9,23 +9,34 @@ import com.studyhard.application.dto.response.ContentReviewResponse;
 import com.studyhard.application.entity.Category;
 import com.studyhard.application.entity.Content;
 import com.studyhard.application.entity.ContentReview;
+import com.studyhard.application.entity.PurchaseContent;
+import com.studyhard.application.entity.Transaction;
 import com.studyhard.application.entity.User;
+import com.studyhard.application.entity.Wallet;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mapper.ContentMapper;
 import com.studyhard.application.model.ContentStatus;
 import com.studyhard.application.model.ReviewAction;
+import com.studyhard.application.model.TransactionType;
 import com.studyhard.application.model.TypeFile;
 import com.studyhard.application.redis.CartContent;
 import com.studyhard.application.redis.repository.CardContentRepository;
 import com.studyhard.application.repository.CategoryRepository;
 import com.studyhard.application.repository.ContentRepository;
 import com.studyhard.application.repository.ContentReviewRepository;
+import com.studyhard.application.repository.PurchaseContentRepository;
+import com.studyhard.application.repository.TransactionRepository;
 import com.studyhard.application.repository.UserRepository;
+import com.studyhard.application.repository.WalletRepository;
 import com.studyhard.application.service.CategoryService;
 import com.studyhard.application.service.ContentService;
 import com.studyhard.application.service.FileStorageService;
+import com.studyhard.application.service.WalletService;
+import com.studyhard.application.specification.ContentPreSpecification;
 import com.studyhard.application.utils.UserExtractor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,11 +46,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.swing.plaf.PanelUI;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,12 +72,17 @@ public class ContentServiceImpl implements ContentService {
   ContentReviewRepository contentReviewRepository;
   UserRepository userRepository;
   FileStorageService fileStorageService;
+  WalletService walletService;
+  PurchaseContentRepository purchaseContentRepository;
+  TransactionRepository transactionRepository;
+
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {
     Category category = categoryService.getCategoryById(createContentRequest.getCategoryId());
     User user = userRepository.findById(UserExtractor.getUserId()).get();
-    List<String> fileName=fileStorageService.saveFile(List.of(createContentRequest.getThumb()), TypeFile.CONTENT);
+    List<String> fileName = fileStorageService.saveFile(List.of(createContentRequest.getThumb()),
+        TypeFile.CONTENT);
 
     Content content = Content.builder()
         .creator(user)
@@ -87,7 +107,7 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(id).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     if (!(content.getStatus() == ContentStatus.PUBLISHED)) {
       if (!content.getCreator().equals(user)) {
         throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
@@ -112,6 +132,9 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(contentId).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
+    if (content.getCreator().getId().equals(UserExtractor.getUserId())) {
+      throw new StudyHardException(ExceptionEnum.SELF_PURCHASE_NOT_ALLOWED);
+    }
     CartContent cartContent = cardContentRepository.findById(UserExtractor.getUserId())
         .orElse(createCart());
     LinkedList<Long> allContentIds = cartContent.getContentIds();
@@ -120,9 +143,10 @@ public class ContentServiceImpl implements ContentService {
     cartContent.setContentIds(allContentIds);
     cardContentRepository.save(cartContent);
   }
+
   @Override
   public void deleteItemsCart(Long contentId) {
-    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     CartContent cartContent = cardContentRepository.findById(UserExtractor.getUserId())
         .orElse(createCart());
     LinkedList<Long> allContentIds = cartContent.getContentIds();
@@ -134,9 +158,58 @@ public class ContentServiceImpl implements ContentService {
   }
 
   @Override
+  @Transactional
+  public void purchaseContent(Long contentId) {
+    Long userId = UserExtractor.getUserId();
+    Content content = contentRepository.findById(contentId).orElseThrow(
+        () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
+    );
+    if (content.getCreator().getId().equals(userId)) {
+      throw new StudyHardException(ExceptionEnum.SELF_PURCHASE_NOT_ALLOWED);
+    }
+    if (content.getStatus().equals(ContentStatus.PUBLISHED)) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_ALREADY_PUBLISHED);
+    }
+    if (!content.getStatus().equals(ContentStatus.PREMIUM)) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
+    }
+    Optional<PurchaseContent> purchaseContentAlready = purchaseContentRepository.findByContentIdAndUserId(
+        contentId, userId);
+    if (purchaseContentAlready.isPresent()) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_IS_PURCHASED);
+    }
+    Wallet wallet = walletService.getOrCreateWallet(userId);
+    if (wallet.getBalance().compareTo(content.getPrice()) < 0) {
+      throw new StudyHardException(ExceptionEnum.INSUFFICIENT_BALANCE);
+    }
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
+    walletService.deductCredit(user, content.getPrice(), TransactionType.PURCHASE,
+        "Purchase content", String.valueOf(contentId));
+    Transaction transaction = transactionRepository.findTransactionByUserIdAndTypeAndReferenceId(
+        userId,
+        TransactionType.PURCHASE, String.valueOf(contentId));
+    PurchaseContent purchaseContent = PurchaseContent.builder()
+        .content(content)
+        .user(user)
+        .transaction(transaction)
+        .createdAt(Instant.now())
+        .build();
+    purchaseContentRepository.save(purchaseContent);
+  }
+
+  @Override
   public List<ContentDto> getAllContent(Pageable pageable) {
     List<Content> contents = contentRepository.findAllByCreator_Id(UserExtractor.getUserId());
     return contents.stream().map(contentMapper::toContentDto).toList();
+  }
+
+  @Override
+  public ContentDto accessContent(Long contentId) {
+    PurchaseContent purchaseContent = purchaseContentRepository.findByContentIdAndUserId(contentId,
+            UserExtractor.getUserId())
+        .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
+    Content content = purchaseContent.getContent();
+    return contentMapper.toContentDto(content);
   }
 
   @Override
@@ -147,10 +220,11 @@ public class ContentServiceImpl implements ContentService {
       LinkedList<Long> allContentIds = cartContent.get().getContentIds();
       List<Content> contents = new ArrayList<>();
       for (Long contentId : allContentIds) {
-        if(contentId.equals(0L)) {
+        if (contentId.equals(0L)) {
           continue;
         }
-        contents.add(contentRepository.findById(contentId).orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)));
+        contents.add(contentRepository.findById(contentId)
+            .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)));
       }
       return contents.stream().map(contentMapper::toContentSummaryDto).toList();
     }
@@ -164,7 +238,7 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(Long.parseLong(contentId)).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
@@ -178,7 +252,9 @@ public class ContentServiceImpl implements ContentService {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<ContentSummaryDto> getAllContentPendingReview(Pageable pageable) {
+  public Page<ContentSummaryDto> getAllContentPendingReview(
+      Pageable pageable) {
+
     Page<Content> contentPage = contentRepository.findByStatus(ContentStatus.PENDING_REVIEW,
         pageable);
     return contentPage.map(contentMapper::toContentSummaryDto);
@@ -190,7 +266,10 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(request.getContentId()).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    if (!content.getStatus().equals(ContentStatus.PENDING_REVIEW)) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_REVIEW_OR_REJECTION);
+    }
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     ContentReview contentReview = ContentReview.builder()
         .content(content)
         .moderator(user)
@@ -198,8 +277,30 @@ public class ContentServiceImpl implements ContentService {
         .action(request.getReviewAction())
         .actionAt(Instant.now())
         .build();
+    content.setStatus(
+        request.getReviewAction().equals(ReviewAction.APPROVE)
+            ? ContentStatus.PREMIUM
+            : ContentStatus.REJECTED
+    );
+    contentRepository.save(content);
     contentReviewRepository.save(contentReview);
     return contentMapper.toContentReviewResponse(contentReview);
+  }
+
+  @Override
+  public void deleteContent(Long contentId) {
+    Content content = contentRepository.findById(contentId).orElseThrow(
+        () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
+    );
+    if (!content.getCreator().getId().equals(UserExtractor.getUserId())) {
+      throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
+    }
+    if (content.getStatus().equals(ContentStatus.PUBLISHED)) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_REVIEW_OR_REJECTION);
+    }
+
+    contentRepository.deleteById(contentId);
+
   }
 
   @Override
@@ -209,7 +310,7 @@ public class ContentServiceImpl implements ContentService {
     Content content = contentRepository.findById(contentIdLong).orElseThrow(
         () -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)
     );
-    User user = userRepository.findById(UserExtractor.getUserId()).get() ;
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
@@ -218,12 +319,20 @@ public class ContentServiceImpl implements ContentService {
   }
 
 
-
   @Override
   @Transactional(readOnly = true)
-  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest) {
+  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest,
+      Pageable pageable) {
+    Specification<Content> filter = ContentPreSpecification.withFiltersUnLimited(
+        contentSearchRequest);
+    Page<Content> contentPage = contentRepository.findAll(filter, pageable);
+    return contentPage.map(contentMapper::toContentSummaryDto);
+  }
 
-    return null;
+  @Override
+  public ContentDto accessContentPublish(Long contentId) {
+    Content content = contentRepository.findById(contentId).orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
+    return contentMapper.toContentDto(content);
   }
 
 

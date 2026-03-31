@@ -31,7 +31,7 @@ public class WalletServiceImpl implements WalletService {
   WalletRepository walletRepository;
   WalletMapper walletMapper;
   TransactionRepository transactionRepository;
-  BigDecimal VND_TO_CREDIT_RATE=new BigDecimal("1000");
+  private static final BigDecimal VND_TO_CREDIT_RATE=new BigDecimal("1000");
   UserRepository userRepository;
   @Transactional
   public Wallet createWallet(Long userId) {
@@ -56,7 +56,7 @@ public class WalletServiceImpl implements WalletService {
   @Override
   @Transactional
   public Wallet getOrCreateWallet(Long userId) {
-    return walletRepository.findById(userId).orElse(createWallet(userId));
+    return walletRepository.findByUserId(userId).orElseGet(() ->createWallet(userId));
   }
 
 

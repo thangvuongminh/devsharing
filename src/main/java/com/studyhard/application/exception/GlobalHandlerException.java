@@ -3,6 +3,12 @@ package com.studyhard.application.exception;
 import com.studyhard.application.response.ApiResponse;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,7 +18,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class GlobalHandlerException {
+  MessageSource messageSource;
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<?>> handleException(Exception e) {
     e.printStackTrace();
@@ -23,6 +32,7 @@ public class GlobalHandlerException {
   @ExceptionHandler(StudyHardException.class)
   public ResponseEntity<ApiResponse<?>> handleStudyHardException(StudyHardException e) {
     ExceptionEnum  exceptionEnum=(ExceptionEnum)e.getInfo();
+    String message=messageSource.getMessage(exceptionEnum.getErrorCode(),null, LocaleContextHolder.getLocale());
     return ResponseEntity.status(exceptionEnum.getHttpStatus()).body(
         ApiResponse.error(exceptionEnum.getErrorMessage(),exceptionEnum.getErrorCode())
     );
@@ -42,5 +52,9 @@ public class GlobalHandlerException {
   @ExceptionHandler(AuthorizationDeniedException.class)
   public ResponseEntity<ApiResponse<?>> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.error(null,"UNAUTHORIZED"));
+  }
+  @ExceptionHandler(PropertyReferenceException.class)
+  public ResponseEntity<ApiResponse<?>> handlePropertyReferenceException(PropertyReferenceException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(null,"FILED_DATA_NOT_MATCH"));
   }
 }

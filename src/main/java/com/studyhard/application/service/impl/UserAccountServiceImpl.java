@@ -151,9 +151,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 
   @Override
   public UserLoginResponse refreshToken(HttpServletRequest request) {
-    Cookie[] cookies = request.getCookies();
+    Cookie[] cookies = null;
+    if (request.getCookies() != null) {
+      cookies = request.getCookies();
+    }
     String refreshToken = Arrays.stream(cookies)
-        .filter(cookie -> cookie.getName().equals("studyHard")).map(
+        .filter(cookie -> "studyHard".equals(cookie.getName())).map(
             Cookie::getValue).findFirst()
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.REFRESH_TOKEN_MISSING));
     Jwt jwt = null;

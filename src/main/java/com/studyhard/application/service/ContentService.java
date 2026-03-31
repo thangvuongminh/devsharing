@@ -28,11 +28,18 @@ public interface ContentService {
 
   public ContentReviewResponse reviewContent(ContentReviewRequest request);
 
+  public  void deleteContent(Long contentId);
+
   public void publishContent(String contentId);
 
   public  void deleteItemsCart(Long contentId);
 
+  public void purchaseContent(Long contentId);
+
+
   public  List<ContentDto> getAllContent(Pageable pageable);
+
+  public  ContentDto accessContent(Long contentId);
 //  public Content getContentById(Long id);
 //
 //  public Content updateContent(Long id, UpdateContentRequest updateContentRequest);
@@ -41,7 +48,9 @@ public interface ContentService {
 //
 //  // search and filter pagination
 //  public Page<Content> searchContentByAuthor(ContentSearchRequest contentSearchRequest);
-  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest);
+  public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest,Pageable pageable);
+
+  public  ContentDto accessContentPublish(Long contentId);
 //
 //  // content management
 //  public Content publishContent(Long contentId) ;

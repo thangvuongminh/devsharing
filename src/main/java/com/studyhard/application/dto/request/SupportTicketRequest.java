@@ -1,5 +1,6 @@
 package com.studyhard.application.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +10,10 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Getter
-@Setter
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@NoArgsConstructor
-@AllArgsConstructor
 public class SupportTicketRequest {
-  String issue;
+  @NotBlank
+  String title;
+  @NotBlank
+  String subject;
 }

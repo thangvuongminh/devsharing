@@ -32,8 +32,16 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
       "Access Denied. You do not have permission to view this content.", HttpStatus.UNAUTHORIZED),
   CONTENT_ALREADY_YOUR_CAR("CONTENT_ALREADY_YOUR_CAR", "Content is already in your cart.",
       HttpStatus.BAD_REQUEST),
+  CONTENT_ALREADY_PUBLISHED("CONTENT_ALREADY_PUBLISHED", "Content is already published.",
+      HttpStatus.BAD_REQUEST),
   CONTENT_REVIEW_OR_REJECTION("CONTENT_REVIEW_OR_REJECTION",
-      "The content is either under review or has been rejected.", HttpStatus.BAD_REQUEST),
+      "The content is either under review or has been rejected.published,premium.",
+      HttpStatus.BAD_REQUEST),
+  CONTENT_IS_PURCHASED("CONTENT_IS_PURCHASED", "Content has already been purchased",
+      HttpStatus.BAD_REQUEST),
+
+  CONTENT_IS_PREMIUM("CONTENT_IS_PREMIUM", "Content has been premium.", HttpStatus.BAD_REQUEST),
+
   // category
   CATEGORY_NOT_FOUND("CATEGORY_NOT_FOUND", "Requested category does not exist.",
       HttpStatus.BAD_REQUEST),
@@ -56,20 +64,30 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
       HttpStatus.CONFLICT),
 
 
+  // SUPPORT TICKET
+  SUPPORT_TICKET_NOT_FOND("SUPPORT_TICKET_NOT_FOND","Support ticket not found",HttpStatus.BAD_REQUEST),
+  SUPPORT_TICKET_IS_WAITING_RESPONSE("SUPPORT_TICKET_IS_WAITING_RESPONSE", "Support ticket is waiting for response", HttpStatus.BAD_REQUEST),
   // Content errors
   CONTENT_NO_REVIEW("CONTENT_NO_REVIEW", "Content must be submitted for moderator approval",
       HttpStatus.FORBIDDEN),
   CONTENT_CAN_NOT_SUMMIT("CONTENT_CAN_NOT_SUMMIT", "Content can not summit", HttpStatus.CONFLICT),
+  SELF_PURCHASE_NOT_ALLOWED("SELF_PURCHASE_NOT_ALLOWED", "Self-purchase is not allowed",
+      HttpStatus.CONFLICT),
+
   // Content Block
   BLOCK_NOT_FOUND("BLOCK_NOT_FOUND", "Block not found", HttpStatus.NOT_FOUND),
   PARENT_BLOCK_NOT_IN_SAME_CONTENT("PARENT_BLOCK_NOT_IN_SAME_CONTENT",
       "Parent and child blocks have mismatched content", HttpStatus.BAD_REQUEST),
   // ai
-  INVALID_ANSWER("INVALID_ANSWER","An error occurred while processing the AI response. Please try again.",HttpStatus.BAD_REQUEST),
-  CONTENT_NOT_EXIST_IN_CART("CONTENT_NOT_EXIST_IN_CART", "The requested content does not exist in the cart.", HttpStatus.NOT_FOUND),
+  INVALID_ANSWER("INVALID_ANSWER",
+      "An error occurred while processing the AI response. Please try again.",
+      HttpStatus.BAD_REQUEST),
+  CONTENT_NOT_EXIST_IN_CART("CONTENT_NOT_EXIST_IN_CART",
+      "The requested content does not exist in the cart.", HttpStatus.NOT_FOUND),
   // role
 
-  ROLE_NOT_FOUND("ROLE_NOT_FOUND", "System role configuration error. Please contact administrator.", HttpStatus.INTERNAL_SERVER_ERROR);
+  ROLE_NOT_FOUND("ROLE_NOT_FOUND", "System role configuration error. Please contact administrator.",
+      HttpStatus.INTERNAL_SERVER_ERROR);
   String errorCode;
   String errorMessage;
   HttpStatus httpStatus;

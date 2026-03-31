@@ -1,7 +1,10 @@
 package com.studyhard.application.dto.response;
 
+import com.studyhard.application.dto.ContentDto;
+import com.studyhard.application.entity.Content;
 import com.studyhard.application.model.ReviewAction;
 import java.security.Timestamp;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,8 +20,9 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 public class ContentReviewResponse {
-  Long contentId;
-  ReviewAction reviewAction;
-  String feedBack;
-  Timestamp action_at;
+  Long id;
+  ReviewAction action;
+  String feedback;
+  Instant actionAt;
+  ContentDto content;
 }

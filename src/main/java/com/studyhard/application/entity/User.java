@@ -50,9 +50,14 @@ public class User {
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   List<UserRole> userRole;
 
-  @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
-  UserProfile userProfile;
+
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   List<UserVerification> userVerifications;
+
+  @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
+  UserProfile userProfile;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+  Wallet wallet;
 }

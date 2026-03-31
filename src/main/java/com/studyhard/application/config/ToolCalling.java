@@ -1,14 +1,20 @@
 package com.studyhard.application.config;
 
+import com.studyhard.application.dto.request.SupportTicketRequest;
+import com.studyhard.application.dto.response.SupportTicketResponse;
 import com.studyhard.application.entity.Role;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.UserRole;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.model.RoleEnum;
+import com.studyhard.application.model.SupportTicketStatus;
+import com.studyhard.application.mongo.entity.SupportTicket;
+import com.studyhard.application.mongo.repository.SupportTicketRepository;
 import com.studyhard.application.repository.RoleRepository;
 import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.repository.UserRoleRepository;
+import com.studyhard.application.utils.UserExtractor;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,25 +33,30 @@ public class ToolCalling {
   UserRoleRepository userRoleRepository;
   UserRepository userRepository;
   RoleRepository roleRepository;
-  @Tool(description = "assign_creator_role")
+  SupportTicketRepository supportTicketRepository;
+  @Tool(description = "create support ticket")
   @Transactional
-  public void createUserRoleCreator(ToolContext toolContext) {
-    Long userId= (Long) toolContext.getContext().get("userId");
-    Role role=roleRepository.findByRoleName(RoleEnum.CREATOR).orElseThrow(() -> new StudyHardException(
-        ExceptionEnum.ROLE_NOT_FOUND));
-    User user = userRepository.findById(userId).orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
-    UserRole userRole=UserRole.builder()
-        .user(user)
-        .role(role)
+  public String createSupportTicket(@ToolParam(description = "Object for create support ticket")SupportTicketRequest request, ToolContext toolContext)  {
+    Long userId=Long.valueOf((String) toolContext.getContext().get("id"));
+    SupportTicket supportTicket = SupportTicket.builder()
+        .status(SupportTicketStatus.Received)
         .createdAt(Instant.now())
-        .updatedAt(Instant.now())
+        .title(request.getTitle())
+        .subject(request.getSubject())
+        .userId(userId)
         .build();
-    userRoleRepository.save(userRole);
+    supportTicketRepository.save(supportTicket);
+    return "Đã tạo ticket thành công với tiêu đề: " + supportTicket.getTitle();
   }
-//  @Tool(description = "become_moderator")
-//  @Transactional
-//  public void becomeModerator(ToolContext toolContext) {
-//
-//  }
+  @Tool(description = "check exist support ticket")
+  @Transactional
+  public Boolean checkSupportTicketPending(ToolContext toolContext) {
+    Long userId=Long.valueOf((String) toolContext.getContext().get("id"));
+    SupportTicket supportTicket=supportTicketRepository.findByUserIdAndStatus(userId,SupportTicketStatus.Processing);
+    if(supportTicket!=null){
+      return true;
+    }
+    return false;
+  }
 
 }
