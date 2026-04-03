@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .permitAll()
                 // user account
                 .requestMatchers("/user/account/**").permitAll()
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/chat/**").permitAll()
                 .anyRequest().authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(
@@ -129,9 +130,10 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.addAllowedOrigin("*");
+    corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
     corsConfiguration.addAllowedHeader("*");
     corsConfiguration.addAllowedMethod("*");
+    corsConfiguration.setAllowCredentials(true);
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", corsConfiguration);
     return source;

@@ -37,6 +37,7 @@ import com.studyhard.application.specification.ContentPreSpecification;
 import com.studyhard.application.utils.UserExtractor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,7 +88,8 @@ public class ContentServiceImpl implements ContentService {
     Content content = Content.builder()
         .creator(user)
         .description(createContentRequest.getDescription())
-        .price(createContentRequest.getPrice())
+        .price(createContentRequest.getPrice().divide(WalletServiceImpl.VND_TO_CREDIT_RATE,0,
+            RoundingMode.HALF_UP))
         .title(createContentRequest.getTitle())
         .category(category)
         .level(createContentRequest.getContentLevel())

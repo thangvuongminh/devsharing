@@ -1,7 +1,8 @@
 package com.studyhard.application.model;
 
 public enum SupportTicketStatus {
-  Received,
-  Processing,
-  Resolved
+  WAITING_MODERATOR,
+  AI_PENDING_RESOLVE,
+  PROCESSING,
+  RESOLVED,
 }

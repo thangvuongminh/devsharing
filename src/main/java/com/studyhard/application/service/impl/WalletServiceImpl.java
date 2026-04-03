@@ -31,7 +31,7 @@ public class WalletServiceImpl implements WalletService {
   WalletRepository walletRepository;
   WalletMapper walletMapper;
   TransactionRepository transactionRepository;
-  private static final BigDecimal VND_TO_CREDIT_RATE=new BigDecimal("1000");
+  public static final BigDecimal VND_TO_CREDIT_RATE=new BigDecimal("1000");
   UserRepository userRepository;
   @Transactional
   public Wallet createWallet(Long userId) {

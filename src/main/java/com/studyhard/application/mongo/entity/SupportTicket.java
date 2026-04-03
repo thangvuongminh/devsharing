@@ -27,10 +27,11 @@ public class SupportTicket {
   String id;
   @Field(name = "user_id")
   Long userId;
-  String title;
   @Field(name = "create_at")
   Instant createdAt;
   SupportTicketStatus status;
-  String subject;
-  List<FeedbackMessageTicket> messages= new ArrayList<>();
+  @Field(name = "handle_by_user_id")
+  Long handleByUserId;
+  @Builder.Default
+  List<ChatMessage> messages= new ArrayList<>();
 }

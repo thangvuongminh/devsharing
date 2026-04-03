@@ -25,7 +25,7 @@ public class UserRole {
   @JsonIgnore
   User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "role_id", nullable = false)
   @JsonIgnore
   Role role;

@@ -48,6 +48,7 @@ public class User {
   Instant updatedAt;
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+
   List<UserRole> userRole;
 
 

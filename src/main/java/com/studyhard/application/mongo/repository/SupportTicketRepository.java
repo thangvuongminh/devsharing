@@ -11,5 +11,6 @@ public interface SupportTicketRepository  extends MongoRepository<SupportTicket,
 
   List<SupportTicket> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-  SupportTicket findByUserIdAndStatus(Long userId, SupportTicketStatus status);
+  SupportTicket findByUserIdAndStatusIn(Long userId, List<SupportTicketStatus> status);
+  SupportTicket findByHandleByUserIdAndStatus(Long userId, SupportTicketStatus status);
 }

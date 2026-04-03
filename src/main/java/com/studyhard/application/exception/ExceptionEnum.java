@@ -67,6 +67,10 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
   // SUPPORT TICKET
   SUPPORT_TICKET_NOT_FOND("SUPPORT_TICKET_NOT_FOND","Support ticket not found",HttpStatus.BAD_REQUEST),
   SUPPORT_TICKET_IS_WAITING_RESPONSE("SUPPORT_TICKET_IS_WAITING_RESPONSE", "Support ticket is waiting for response", HttpStatus.BAD_REQUEST),
+  SUPPORT_TICKET_IS_PENDING_RESOLVED("SUPPORT_TICKET_IS_PENDING_RESOLVED", "Support ticket is pending resolved", HttpStatus.OK),
+  SUPPORT_TICKET_IS_RESOLVED("SUPPORT_TICKET_IS_RESOLVED", "Support ticket is resolved", HttpStatus.OK),
+  SUPPORT_TICKET_IS_REJECTED("SUPPORT_TICKET_IS_REJECTED", "Support ticket is rejected", HttpStatus.BAD_REQUEST),
+  SUPPORT_STAFF_NOT_AVAILABLE("SUPPORT_STAFF_NOT_AVAILABLE", "No support staff is currently available", HttpStatus.SERVICE_UNAVAILABLE),
   // Content errors
   CONTENT_NO_REVIEW("CONTENT_NO_REVIEW", "Content must be submitted for moderator approval",
       HttpStatus.FORBIDDEN),
