@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .permitAll()
                 // user account
                 .requestMatchers("/user/account/**").permitAll()
+                .requestMatchers("/test").permitAll()
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/chat/**").permitAll()
                 .anyRequest().authenticated())

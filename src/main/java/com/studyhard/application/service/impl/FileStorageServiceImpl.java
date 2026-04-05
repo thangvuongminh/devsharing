@@ -2,6 +2,7 @@ package com.studyhard.application.service.impl;
 
 import com.studyhard.application.model.TypeFile;
 import com.studyhard.application.service.FileStorageService;
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +18,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.couchbase.CouchbaseProperties.Io;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +29,11 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FileStorageServiceImpl implements FileStorageService {
+  @NonFinal
+  @Value("${app.upload.dir:/app/storage}")
+  String uploadDir;
   Path root= Paths.get("D:\\dev-sharing");
+  @PostConstruct
   @Override
   public void init(Path pathStore) {
     try {

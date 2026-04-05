@@ -28,11 +28,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.sql.ast.tree.expression.QueryTransformer;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.evaluation.FactCheckingEvaluator;
 import org.springframework.ai.chat.evaluation.RelevancyEvaluator;
@@ -41,7 +43,10 @@ import org.springframework.ai.evaluation.EvaluationRequest;
 import org.springframework.ai.evaluation.EvaluationResponse;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.Resource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.MessagingException;
@@ -67,6 +72,10 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   ChatClient chatClient;
   RedisTemplate<String, Object> redisTemplate;
   ChatClient.Builder chatClientBuilder;
+  @NonFinal
+  @Autowired
+  @Qualifier("evaluationUserMessages")
+  ChatClient  evaluationUserMessages;
   @NonFinal
   @Value("classpath:ai/supportCustomerTicket.st")
   Resource systemPrompt;
@@ -209,7 +218,7 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   @Override
   public Boolean checkRequestModerator(ChatMessage chatMessage, SupportTicket supportTicket) {
     String historyChat = getHistoryChat(supportTicket);
-    PresendSupportCustomerEvaluator evaluator = new PresendSupportCustomerEvaluator(chatClient,
+    PresendSupportCustomerEvaluator evaluator = new PresendSupportCustomerEvaluator(evaluationUserMessages,
         historyChat);
     EvaluationResponse evaluationResponse = evaluator.evaluate(
         new EvaluationRequest(chatMessage.getContent(), null, null));

@@ -14,7 +14,9 @@ import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.mongo.MongoChatMemoryRepository;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
 import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
+import org.springframework.ai.rag.retrieval.search.DocumentRetriever;
 import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.tool.execution.DefaultToolExecutionExceptionProcessor;
 import org.springframework.ai.tool.execution.ToolExecutionExceptionProcessor;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.Resource;
 
 @Configuration
@@ -44,26 +47,32 @@ public class AiConfig {
         .maxMessages(10)
         .build();
   }
-
+  @Bean(name = "evaluationUserMessages")
+  public ChatClient chatClientAdvisor (Builder chatClientBuilder,
+      CustomUsageAdvisor customUsageAdvisor ){
+    SimpleLoggerAdvisor simpleLoggerAdvisor = SimpleLoggerAdvisor.builder()
+        .build();
+    ChatOptions chatOptions = ChatOptions.builder()
+        .temperature(0.7)
+        .topP(0.7)
+        .build();
+    return chatClientBuilder
+        .defaultOptions(chatOptions)
+            .
+        defaultAdvisors(simpleLoggerAdvisor, customUsageAdvisor)
+        .build();
+  }
   @Bean
-  public RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(
-      Builder chatClientBuilder,VectorStore vectorStore) {
-    return RetrievalAugmentationAdvisor.builder()
-        .queryTransformers(TranslationQueryTransformer.builder()
-            .chatClientBuilder(chatClientBuilder.clone())
-            .targetLanguage("english")
-            .build())
-        .documentRetriever(
-            VectorStoreDocumentRetriever.builder()
-                .similarityThreshold(0.6)
-                .vectorStore(vectorStore)
-                .build()
-        )
+  public QueryTransformer queryTransformer(ChatClient.Builder chatClientBuilder) {
+    return TranslationQueryTransformer.builder()
+        .targetLanguage("english")
+        .chatClientBuilder(chatClientBuilder)
         .build();
   }
     @Bean
+    @Primary
     public ChatClient chatClient (Builder chatClientBuilder,
-        CustomUsageAdvisor customUsageAdvisor, ChatMemory chatMemory){
+        CustomUsageAdvisor customUsageAdvisor, ChatMemory chatMemory) {
       SimpleLoggerAdvisor simpleLoggerAdvisor = SimpleLoggerAdvisor.builder()
           .build();
       MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(

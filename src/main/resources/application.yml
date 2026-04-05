@@ -90,4 +90,6 @@ api:
     clientSecret: ${GOOGLE_CLIENT_SECRET}
     grantType: authorization_code
     redirectUri: http://localhost:8090/swagger-ui/oauth2-redirect.html
-
+app:
+  upload:
+    dir: D:/dev-sharing
