@@ -1,5 +1,6 @@
 package com.studyhard.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.studyhard.application.model.ContentLevel;
 import com.studyhard.application.model.ContentStatus;
 import java.math.BigDecimal;
@@ -23,13 +24,15 @@ public class ContentSummaryDto {
   String title;
   String description;
   Long creatorId;
-  CategoryDto category;
+  String categoryName;
   ContentStatus status;
   ContentLevel level;
   BigDecimal price;
-  String thumbnail;
+  String thumb;
   Long viewCount;
   Long purchaseCount;
+  @JsonFormat(pattern = "dd/MM/yyyy",timezone = "Asia/Ho_Chi_Minh")
   Instant publishedAt;
+  @JsonFormat(pattern = "dd/MM/yyyy",timezone = "Asia/Ho_Chi_Minh")
   Instant createdAt;
 }

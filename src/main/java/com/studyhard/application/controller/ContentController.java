@@ -10,11 +10,13 @@ import com.studyhard.application.entity.Content;
 import com.studyhard.application.mapper.ContentMapper;
 import com.studyhard.application.response.ApiResponse;
 import com.studyhard.application.service.ContentService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import javax.print.attribute.standard.Media;
 import lombok.AccessLevel;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -66,19 +69,26 @@ public class ContentController {
   @GetMapping("/all/contests")
   @PreAuthorize("hasRole('CREATOR')")
   @Operation(summary = "Get all contents by id only user", description = "Get all contents")
-  public ResponseEntity<ApiResponse<List<ContentDto>>> getAllContents(Pageable pageable) {
+  public ResponseEntity<ApiResponse<List<ContentDto>>> getAllContents(@Parameter(hidden = true)
+  @PageableDefault(
+      page = 0,
+      size = 20,
+      sort = "createdAt",
+      direction = Direction.DESC
+  ) Pageable pageable) {
     List<ContentDto> contentDto = contentService.getAllContent(pageable);
     return ResponseEntity.ok().body(ApiResponse.success(contentDto));
   }
 
-  @GetMapping("/add/cart/{contentId}")
+  @PostMapping("/add/cart")
   @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
   @Operation(summary = "Add content  to cart")
-  public ResponseEntity<ApiResponse<Void>> addToCard(@PathVariable long contentId) {
-    contentService.addToCard(contentId);
+  public ResponseEntity<ApiResponse<Void>> addToCard(@RequestBody Map<String, String> body) {
+    String contentId = body.get("contentId");
+    Long contentLong= Long.parseLong(contentId);
+    contentService.addToCard(contentLong);
     return ResponseEntity.ok().body(ApiResponse.success(null));
   }
-
   @GetMapping("/cart")
   @Operation(summary = "Get content no purchase")
   @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
@@ -142,18 +152,17 @@ public class ContentController {
     return ResponseEntity.ok().body(ApiResponse.success(contentDto));
   }
 
-  @GetMapping("/search")
+  @PostMapping("/search")
   @Operation(summary = "SearchContent", parameters = {
       @Parameter(name = "page", description = "Page number", example = "0"),
       @Parameter(name = "size", description = "Page size", example = "10"),
       @Parameter(name = "sort", description = "Sort field,direction", example = "createdAt,desc", required = false)
   })
-  @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
   public ResponseEntity<ApiResponse<Page<ContentSummaryDto>>> searchContentAnyUser(
-      @ModelAttribute ContentSearchRequest contentSearchRequest,@Parameter(hidden = true) @PageableDefault(
+      @RequestBody(required = false) ContentSearchRequest contentSearchRequest,@Parameter(hidden = true) @PageableDefault(
           size = 20,
           page = 0,
-          sort = "viewCount",
+          sort = "createdAt",
           direction = Direction.DESC
       ) Pageable pageable ) {
     Page<ContentSummaryDto> contentSummaryDtos=  contentService.searchContentAnyUsers(contentSearchRequest,pageable);

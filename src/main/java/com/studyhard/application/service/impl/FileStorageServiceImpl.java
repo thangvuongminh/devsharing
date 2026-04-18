@@ -32,8 +32,12 @@ public class FileStorageServiceImpl implements FileStorageService {
   @NonFinal
   @Value("${app.upload.dir:/app/storage}")
   String uploadDir;
-  Path root= Paths.get("D:\\dev-sharing");
+  @NonFinal
+  Path root;
   @PostConstruct
+  public void  firstConstrict(){
+     root= Paths.get(uploadDir);
+  }
   @Override
   public void init(Path pathStore) {
     try {
@@ -54,7 +58,7 @@ public class FileStorageServiceImpl implements FileStorageService {
           for (MultipartFile multipartFile:files){
             String fileName= UUID.randomUUID().toString() + multipartFile.getOriginalFilename() ;
               Files.copy(multipartFile.getInputStream(), pathStore.resolve(fileName));
-              String pathFilename=typeFile.getUrl()+"\\"+fileName;
+              String pathFilename=typeFile.getUrl()+File.separator+fileName;
               fileNames.add(fileName);
           }
           return fileNames;

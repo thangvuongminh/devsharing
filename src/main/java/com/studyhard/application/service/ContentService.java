@@ -20,7 +20,7 @@ public interface ContentService {
 
   public void addToCard(Long contentId);
 
-  public List<ContentSummaryDto> getAllCard();
+  public List<ContentSummaryDto> getAllCard( );
 
   public ContentSummaryDto submitReviewContent(String contentId);
 

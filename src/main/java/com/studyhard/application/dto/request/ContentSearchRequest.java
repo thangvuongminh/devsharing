@@ -21,7 +21,7 @@ import lombok.experimental.FieldDefaults;
 public class ContentSearchRequest {
 
   String keyword; // Search in title and description
-  Long categoryId;
+  String categoryName;
   ContentStatus status;
   ContentLevel level;
   Long creatorId;

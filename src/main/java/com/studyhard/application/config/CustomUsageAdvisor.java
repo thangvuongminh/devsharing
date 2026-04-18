@@ -20,7 +20,7 @@ public class CustomUsageAdvisor implements CallAdvisor {
     assert chatClientResponse.chatResponse() != null;
     Usage usage= chatClientResponse.chatResponse().getMetadata().getUsage();
     log.info("Advise call usage {}",usage.toString());
-    return callAdvisorChain.nextCall(chatClientRequest);
+    return chatClientResponse;
   }
 
   @Override

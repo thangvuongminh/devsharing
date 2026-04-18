@@ -64,6 +64,8 @@ logging:
           chat:
             client:
               advisor: DEBUG
+        web:
+          client: DEBUG
 qdrant:
   init-data: false
 openapi:
@@ -89,7 +91,9 @@ api:
     clientId: ${GOOGLE_CLIENT_ID}
     clientSecret: ${GOOGLE_CLIENT_SECRET}
     grantType: authorization_code
-    redirectUri: http://localhost:8090/swagger-ui/oauth2-redirect.html
+    redirectUri: http://localhost:5173/account/login
 app:
   upload:
     dir: D:/dev-sharing
+  contents:
+    url: http://localhost:8090/images

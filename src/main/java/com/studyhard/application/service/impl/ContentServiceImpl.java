@@ -51,6 +51,8 @@ import javax.swing.plaf.PanelUI;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -65,6 +67,7 @@ import org.springframework.transaction.annotation.Transactional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ContentServiceImpl implements ContentService {
 
+  private static final Logger log = LoggerFactory.getLogger(ContentServiceImpl.class);
   ContentMapper contentMapper;
   ContentRepository contentRepository;
   CategoryRepository categoryRepository;
@@ -215,7 +218,7 @@ public class ContentServiceImpl implements ContentService {
   }
 
   @Override
-  public List<ContentSummaryDto> getAllCard() {
+  public List<ContentSummaryDto> getAllCard( ) {
     Long userId = UserExtractor.getUserId();
     Optional<CartContent> cartContent = cardContentRepository.findById(userId);
     if (cartContent.isPresent()) {
@@ -325,8 +328,11 @@ public class ContentServiceImpl implements ContentService {
   @Transactional(readOnly = true)
   public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest,
       Pageable pageable) {
-    Specification<Content> filter = ContentPreSpecification.withFiltersUnLimited(
-        contentSearchRequest);
+    Specification<Content> filter=null;
+    if(contentSearchRequest!=null){
+      filter=ContentPreSpecification.withFiltersUnLimited(
+          contentSearchRequest);
+      }
     Page<Content> contentPage = contentRepository.findAll(filter, pageable);
     return contentPage.map(contentMapper::toContentSummaryDto);
   }

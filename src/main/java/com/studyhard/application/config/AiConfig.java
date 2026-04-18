@@ -32,14 +32,17 @@ import org.springframework.core.io.Resource;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AiConfig {
+
   MongoChatMemoryRepository memoryRepository;
   @NonFinal
   @Value("classpath:ai/contentModerator.st")
   Resource defaultSystem;
+
   @Bean
   ToolExecutionExceptionProcessor toolExecutionExceptionProcessor() {
     return new DefaultToolExecutionExceptionProcessor(true);
   }
+
   @Bean
   public ChatMemory chatMemory() {
     return MessageWindowChatMemory.builder()
@@ -47,9 +50,10 @@ public class AiConfig {
         .maxMessages(10)
         .build();
   }
+
   @Bean(name = "evaluationUserMessages")
-  public ChatClient chatClientAdvisor (Builder chatClientBuilder,
-      CustomUsageAdvisor customUsageAdvisor ){
+  public ChatClient chatClientAdvisor(Builder chatClientBuilder,
+      CustomUsageAdvisor customUsageAdvisor) {
     SimpleLoggerAdvisor simpleLoggerAdvisor = SimpleLoggerAdvisor.builder()
         .build();
     ChatOptions chatOptions = ChatOptions.builder()
@@ -62,32 +66,34 @@ public class AiConfig {
         defaultAdvisors(simpleLoggerAdvisor, customUsageAdvisor)
         .build();
   }
-  @Bean
-  public QueryTransformer queryTransformer(ChatClient.Builder chatClientBuilder) {
-    return TranslationQueryTransformer.builder()
-        .targetLanguage("english")
-        .chatClientBuilder(chatClientBuilder)
+  @Bean(name = "checkEligibilityCreator")
+  public  ChatClient chatClientForCreator(ChatClient.Builder chatClientBuilder,CustomUsageAdvisor customUsageAdvisor,ChatMemory chatMemory) {
+    SimpleLoggerAdvisor simpleLoggerAdvisor = new SimpleLoggerAdvisor();
+    MessageChatMemoryAdvisor messageChatMemoryAdvisor= MessageChatMemoryAdvisor.builder(chatMemory).build() ;
+    return chatClientBuilder
+        .defaultAdvisors(simpleLoggerAdvisor,customUsageAdvisor)
         .build();
   }
-    @Bean
-    @Primary
-    public ChatClient chatClient (Builder chatClientBuilder,
-        CustomUsageAdvisor customUsageAdvisor, ChatMemory chatMemory) {
-      SimpleLoggerAdvisor simpleLoggerAdvisor = SimpleLoggerAdvisor.builder()
-          .build();
-      MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(
-              chatMemory)
-          .build();
-      ChatOptions chatOptions = ChatOptions.builder()
-          .temperature(0.7)
-          .topP(0.7)
-          .build();
-      return chatClientBuilder
-          .defaultOptions(chatOptions)
-          .defaultSystem(defaultSystem)
-              .
-          defaultAdvisors(simpleLoggerAdvisor, customUsageAdvisor, messageChatMemoryAdvisor)
-          .build();
-    }
 
+  @Bean
+  @Primary
+  public ChatClient chatClient(ChatClient.Builder chatClientBuilder,
+      CustomUsageAdvisor customUsageAdvisor, ChatMemory chatMemory) {
+    SimpleLoggerAdvisor simpleLoggerAdvisor = SimpleLoggerAdvisor.builder()
+        .build();
+    MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(
+            chatMemory)
+        .build();
+    ChatOptions chatOptions = ChatOptions.builder()
+        .temperature(0.7)
+        .topP(0.7)
+        .build();
+    return chatClientBuilder
+        .defaultOptions(chatOptions)
+        .defaultSystem(defaultSystem)
+            .
+        defaultAdvisors(simpleLoggerAdvisor, customUsageAdvisor, messageChatMemoryAdvisor)
+        .build();
   }
+
+}

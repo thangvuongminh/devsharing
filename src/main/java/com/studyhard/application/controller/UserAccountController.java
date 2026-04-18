@@ -3,11 +3,14 @@ package com.studyhard.application.controller;
 import com.studyhard.application.dto.request.BecomeCreatorRequest;
 import com.studyhard.application.dto.request.ChangePasswordRequest;
 import com.studyhard.application.dto.request.ForgotPasswordRequest;
+import com.studyhard.application.dto.request.GoogleAccountTokenRequest;
 import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
 import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
+import com.studyhard.application.exception.ExceptionEnum;
+import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.response.ApiResponse;
 import com.studyhard.application.service.UserAccountService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +22,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("user/account")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -61,8 +67,10 @@ public class UserAccountController {
         .httpOnly(true)
         .secure(false)
         .path("/")
+        .maxAge(30 * 24 * 60 * 60)
+        .sameSite("Lax")
         .build();
-    response.addHeader("Set-Cookie", resCookie.toString());
+    response.addHeader(HttpHeaders.SET_COOKIE, resCookie.toString());
     return ResponseEntity.ok(ApiResponse.success(userLoginResponse));
   }
 
@@ -73,7 +81,7 @@ public class UserAccountController {
     return ResponseEntity.ok().body(ApiResponse.success(null));
   }
 
-  @GetMapping("/refreshToken")
+  @PostMapping("/refreshToken")
   public ResponseEntity<ApiResponse<UserLoginResponse>> refreshToken(HttpServletRequest request) {
     UserLoginResponse response = userAccountService.refreshToken(request);
     return ResponseEntity.ok().body(ApiResponse.success(response));
@@ -104,16 +112,22 @@ public class UserAccountController {
 
   @PostMapping("/google")
   public ResponseEntity<ApiResponse<UserLoginResponse>> loginGoogle(@RequestBody String code,  HttpServletRequest request,HttpServletResponse response) {
-    String bearerToken = request.getHeader("Authorization");
-    String accessToken=bearerToken.substring(7);
-    UserLoginResponse userLoginResponse= userAccountService.loginByGoogle(accessToken);
+    log.info("Someone call me with code {}", code);
+
+    String codeRpl=code.replaceAll("%2F","/");
+     UserLoginResponse userLoginResponse= userAccountService.loginByGoogle(codeRpl);
+     log.info("Someone call me with code {}", userLoginResponse.getRefreshToken());
     ResponseCookie resCookie = ResponseCookie.from("studyHard", userLoginResponse.getRefreshToken())
         .httpOnly(true)
         .secure(false)
+        .maxAge(30 * 24 * 60 * 60)
         .path("/")
+        .sameSite("Lax")
         .build();
+    response.addHeader(HttpHeaders.SET_COOKIE, resCookie.toString());
     return ResponseEntity.ok().body(ApiResponse.success(userLoginResponse));
   }
+
 //  @PostMapping("/become/creator")
 //  public ResponseEntity<ApiResponse<String>> becomeCreator(@ModelAttribute BecomeCreatorRequest request) {
 //    String response=  userAccountService.becomeCreator(request);

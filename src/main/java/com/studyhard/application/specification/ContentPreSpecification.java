@@ -11,8 +11,9 @@ import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.jpa.domain.Specification;
-
+@Log4j2
 public class ContentPreSpecification {
 
   public static Specification<Content> withFiltersByAuthor() {
@@ -30,12 +31,17 @@ public class ContentPreSpecification {
         Predicate description= criteriaBuilder.like(root.get("description"), keyword);
         predicates.add(criteriaBuilder.or(title,description));
       }
-      if (contentSearchRequest.getCategoryId() != null) {
-        Predicate   predicateCategory = criteriaBuilder.equal(root.get("categoryId"), contentSearchRequest.getCategoryId());
+      if (contentSearchRequest.getCategoryName() != null) {
+        Predicate   predicateCategory = criteriaBuilder.equal(root.get("category").get("name"), contentSearchRequest.getCategoryName());
         predicates.add(predicateCategory);
       }
       Predicate predicateStatus= criteriaBuilder.equal(root.get("status"), ContentStatus.PUBLISHED);
       predicates.add(predicateStatus);
+      if(contentSearchRequest.getLevel()!=null){
+        Predicate predicateLevel = criteriaBuilder.equal(root.get("level"), contentSearchRequest.getLevel());
+        predicates.add(predicateLevel);
+      }
+
       if(contentSearchRequest.getMinPrice()!=null){
         Predicate predicateMinPrice = criteriaBuilder.greaterThanOrEqualTo(root.get("price"), contentSearchRequest.getMinPrice());
         predicates.add(predicateMinPrice);

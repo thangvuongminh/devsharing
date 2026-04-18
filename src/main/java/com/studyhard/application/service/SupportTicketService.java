@@ -13,4 +13,5 @@ public interface SupportTicketService  {
   public  void chatSupport(ChatMessageRequest request,String ticketId,Long userId);
   public Boolean checkRequestModerator(ChatMessage chatMessage, SupportTicket supportTicket);
   public void moderatorJoin(String ticketId,Long userId);
+
 }

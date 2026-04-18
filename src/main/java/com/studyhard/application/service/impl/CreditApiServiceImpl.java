@@ -13,6 +13,8 @@ import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.repository.WalletRepository;
 import com.studyhard.application.service.CreditApiService;
 import com.studyhard.application.service.WalletService;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +71,9 @@ public class CreditApiServiceImpl implements CreditApiService {
     User user=userRepository.findById(request.getUserId()).get();
     Wallet walletBefore = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));
-    walletService.addCredit(request.getUserId(), request.getAmount(), TransactionType.EARNING,
+    BigDecimal amount=new BigDecimal(String.valueOf(request.getAmount()));
+    amount=amount.divide(WalletServiceImpl.VND_TO_CREDIT_RATE,2, RoundingMode.HALF_UP);
+    walletService.addCredit(request.getUserId(), amount, TransactionType.EARNING,
         request.getReason(), request.getReferenceId());
     Wallet walletAfter = walletRepository.findByUserIdWithLock(user)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.WALLET_NOT_FOUND));

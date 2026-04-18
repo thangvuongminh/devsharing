@@ -35,7 +35,7 @@ public class CategoryController {
   CategoryService categoryService;
   CategoryMapper categoryMapper;
 
-  @GetMapping
+  @GetMapping("/getAll")
   @Operation(summary = "Get all categories", description = "Get list of all available categories")
   public ResponseEntity<ApiResponse<List<CategoryDto>>> getAllCategories() {
     List<Category> categories = categoryService.getAllCategories();

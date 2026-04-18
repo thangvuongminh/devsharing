@@ -2,17 +2,17 @@ package com.studyhard.application.service.impl;
 
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.studyhard.application.config.properties.GoogleApiProperties;
 import com.studyhard.application.dto.request.BecomeCreatorRequest;
 import com.studyhard.application.dto.request.ChangePasswordRequest;
+import com.studyhard.application.dto.request.GoogleAccountTokenRequest;
 import com.studyhard.application.dto.request.ResetPasswordRequest;
 import com.studyhard.application.dto.request.UserLoginRequest;
 import com.studyhard.application.dto.request.UserRegisterRequest;
+import com.studyhard.application.dto.response.GoogleUserResponse;
 import com.studyhard.application.dto.response.UserLoginResponse;
 import com.studyhard.application.dto.response.UserRegistrationResponse;
-import com.studyhard.application.dto.response.GoogleUserResponse;
-import com.studyhard.application.entity.BecomeCreator;
-import com.studyhard.application.entity.BecomeCreatorMessagesImages;
 import com.studyhard.application.entity.Role;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.UserRole;
@@ -25,8 +25,7 @@ import com.studyhard.application.model.RoleEnum;
 import com.studyhard.application.model.TypeFile;
 import com.studyhard.application.model.UserStatus;
 import com.studyhard.application.model.UserVerificationChannel;
-import com.studyhard.application.repository.BecomeCreatorMessagesImagesRepository;
-import com.studyhard.application.repository.BecomeCreatorRepository;
+import com.studyhard.application.mongo.repository.BeginCreatorRepository;
 import com.studyhard.application.repository.RoleRepository;
 import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.repository.UserRoleRepository;
@@ -40,7 +39,6 @@ import com.studyhard.application.utils.UserExtractor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -59,6 +57,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.content.Media;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -71,7 +70,9 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,8 +81,6 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Log4j2
 public class UserAccountServiceImpl implements UserAccountService {
-  BecomeCreatorRepository becomeCreatorRepository;
-  BecomeCreatorMessagesImagesRepository becomeCreatorMessagesImagesRepository;
   NotificationService notificationService;
   RoleRepository roleRepository;
   PasswordEncoder passwordEncoder;
@@ -144,6 +143,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         .path("/")
         .httpOnly(true)
         .maxAge(0)
+        .sameSite("Lax")
         .build();
     response.addHeader("Set-Cookie", responseCookie.toString());
 
@@ -154,6 +154,9 @@ public class UserAccountServiceImpl implements UserAccountService {
     Cookie[] cookies = null;
     if (request.getCookies() != null) {
       cookies = request.getCookies();
+    }
+    if(cookies==null || cookies.length==0){
+      throw new StudyHardException(ExceptionEnum.INVALID_TOKEN);
     }
     String refreshToken = Arrays.stream(cookies)
         .filter(cookie -> "studyHard".equals(cookie.getName())).map(
@@ -167,12 +170,18 @@ public class UserAccountServiceImpl implements UserAccountService {
       throw new StudyHardException(ExceptionEnum.INVALID_TOKEN);
     }
     Map<String, Object> claims = jwt.getClaims();
+    Long userId= (Long) claims.get("userId");
+    Long theLastChange=(Long) redisTemplate.opsForHash().get("theLastChangePassword",userId.toString());
+    Instant issueTime = (Instant) claims.get("iat");
+    Long issueAt = issueTime.getEpochSecond();
+    if(theLastChange!=null && theLastChange > issueAt){
+      throw new StudyHardException(ExceptionEnum.INVALID_TOKEN);
+    }
     Instant exp = (Instant) claims.get("exp");
     Instant now = Instant.now();
     if (now.isAfter(exp)) {
       throw new StudyHardException(ExceptionEnum.INVALID_TOKEN);
     }
-    Long userId = (Long) claims.get("userId");
     List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
     String[] roles = userRoles.stream().map(ur -> ur.getRole().getRoleName().name()).distinct()
         .toArray(String[]::new);
@@ -226,8 +235,10 @@ public class UserAccountServiceImpl implements UserAccountService {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void changePassword(ChangePasswordRequest changePasswordRequest) {
-    User user = userRepository.findById(UserExtractor.getUserId())
+    Long userId=UserExtractor.getUserId();
+    User user = userRepository.findById(userId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
     if (passwordEncoder.matches(changePasswordRequest.getPassword(), user.getPassword())) {
 
@@ -237,75 +248,68 @@ public class UserAccountServiceImpl implements UserAccountService {
     } else {
       throw new StudyHardException(ExceptionEnum.PASSWORD_NOT_MATCH);
     }
+     redisTemplate.opsForHash().put( "theLastChangePassword",userId.toString(),Instant.now().getEpochSecond());
   }
 
   @Override
   @Transactional
   public UserLoginResponse loginByGoogle(String code) {
     // Get accesstoken
-    Map<String,String> headers = new HashMap<>();
-    headers.put("client_id",googleApiProperties.getClientId());
-    headers.put("client_secret",googleApiProperties.getClientSecret());
-    headers.put("grant_type",googleApiProperties.getGrantType());
-    headers.put("redirect_uri",googleApiProperties.getRedirectUri());
-    headers.put("code",code);
+    MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+    headers.add("client_id",googleApiProperties.getClientId());
+    headers.add("client_secret",googleApiProperties.getClientSecret());
+    headers.add("grant_type",googleApiProperties.getGrantType());
+    headers.add("redirect_uri",googleApiProperties.getRedirectUri());
+    headers.add("code",code);
     RestClient restClient= RestClient.builder()
-        .defaultHeaders(httpHeaders -> httpHeaders.setAll(headers))
         .baseUrl(googleApiProperties.getToken())
         .build();
-    record  GoogleAccessResponse(String accessToken) {}
-    GoogleAccessResponse googleAccessResponse=restClient.post().retrieve().body(GoogleAccessResponse.class);
-    int i=0;
-//
-//
-//
-//
-//
-//
-//
-//
-//    ///
-//    RestClient restClient = RestClient.builder()
-//        .baseUrl("https://www.googleapis.com/oauth2/v1/userinfo")
-//        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + code)
-//        .build();
-//    GoogleUserResponse googleUserResponse = restClient.get().retrieve()
-//        .body(GoogleUserResponse.class);
-//    User user = userRepository.findByEmail(googleUserResponse.getEmail());
-//    Role role = getRoleConsumer();
-//    if (user == null) {
-//
-//      user = User.builder()
-//          .status(UserStatus.ACTIVE)
-//          .username(googleUserResponse.getEmail())
-//          .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-//          .email(googleUserResponse.getEmail())
-//          .fullName(googleUserResponse.getGiven_name() + googleUserResponse.getFamily_name())
-//          .createdAt(Instant.now())
-//          .updatedAt(Instant.now())
-//          .build();
-//      userRepository.save(user);
-//      UserRole userRole = UserRole.builder()
-//          .user(user)
-//          .role(role)
-//          .createdAt(Instant.now())
-//          .updatedAt(Instant.now())
-//          .build();
-//      userRoleRepository.save(userRole);
-//    }
-//    List<UserRole> userRole = userRoleRepository.findByUser(user);
-//    String[] roles = userRole.stream().map(userRole1 ->
-//        userRole1.getRole().getRoleName().name()
-//    ).toArray(String[]::new);
-//    String accessToken = generateToken.createToken(user.getId(), TokenType.ACCESS_TOKEN, roles);
-//    String refreshToken = generateToken.createToken(user.getId(), TokenType.REFRESH_TOKEN, roles);
-//
-//    return UserLoginResponse.builder()
-//        .accessToken(accessToken)
-//        .userId(user.getId())
-//        .build();
-    return  null;
+    record  GoogleAccessResponse(@JsonProperty("access_token") String accessToken) {}
+
+    GoogleAccessResponse googleAccessResponse =restClient.post().contentType(MediaType.APPLICATION_FORM_URLENCODED).body(headers).retrieve().body(GoogleAccessResponse.class);
+    RestClient restClient1 = RestClient.builder()
+        .baseUrl("https://www.googleapis.com/oauth2/v1/userinfo")
+        .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + googleAccessResponse.accessToken)
+        .build();
+    GoogleUserResponse googleUserResponse = restClient1.get().retrieve()
+        .body(GoogleUserResponse.class);
+
+    User user = userRepository.findByEmail(googleUserResponse.getEmail());
+    Role role = getRoleConsumer();
+    if (user == null) {
+
+      user = User.builder()
+          .status(UserStatus.ACTIVE)
+          .username(googleUserResponse.getEmail())
+          .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+          .email(googleUserResponse.getEmail())
+          .fullName(googleUserResponse.getGiven_name() + googleUserResponse.getFamily_name())
+          .createdAt(Instant.now())
+          .updatedAt(Instant.now())
+          .build();
+      userRepository.save(user);
+      UserRole userRole = UserRole.builder()
+          .user(user)
+          .role(role)
+          .createdAt(Instant.now())
+          .updatedAt(Instant.now())
+          .build();
+      userRoleRepository.save(userRole);
+    }
+    List<UserRole> userRole = userRoleRepository.findByUser(user);
+    String[] roles = userRole.stream().map(userRole1 ->
+        userRole1.getRole().getRoleName().name()
+    ).toArray(String[]::new);
+    String accessToken = generateToken.createToken(user.getId(), TokenType.ACCESS_TOKEN, roles);
+    String refreshToken = generateToken.createToken(user.getId(), TokenType.REFRESH_TOKEN, roles);
+
+    return UserLoginResponse.builder()
+        .accessToken(accessToken)
+        .refreshToken(refreshToken)
+        .userId(user.getId())
+        .build();
   }
+
 
 
   public void sendEmailVerification(User user) {
@@ -386,52 +390,4 @@ public class UserAccountServiceImpl implements UserAccountService {
     userRoleRepository.save(userRole);
   }
 
-  public void saveBecomeCreator(BecomeCreator becomeCreator, String message,List<String> url){
-      BecomeCreatorMessagesImages becomeCreatorMessagesImages=null;
-      List<BecomeCreatorMessagesImages> becomeCreatorMessagesImagesList=new ArrayList<>();
-      for(String urlDetail : url){
-        becomeCreatorMessagesImages=BecomeCreatorMessagesImages.builder()
-            .message(message)
-            .becomeCreator(becomeCreator)
-            .thumbUrl(urlDetail)
-            .build();
-        becomeCreatorMessagesImagesList.add(becomeCreatorMessagesImages);
-      }
-      becomeCreatorMessagesImagesRepository.save(becomeCreatorMessagesImages);
-  }
-
-  @Override
-  @Transactional
-  public String becomeCreator(BecomeCreatorRequest becomeCreatorRequest)  {
-     Long userId=UserExtractor.getUserId();
-     User user=userRepository.findById(userId).orElseThrow(()
-         -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND)
-     );
-    BecomeCreator becomeCreator=BecomeCreator.builder()
-        .createAt(Instant.now())
-        .status(BecomeCreatorStatus.PENDING)
-        .user(user)
-        .build();
-    becomeCreatorRepository.save(becomeCreator);
-     List<BecomeCreatorRequest.BecomeCreatorDesc>  becomeCreatorDescs = becomeCreatorRequest.getBecomeCreatorDescs();
-     List<UserMessage> userMessages= new ArrayList<>();
-     for(BecomeCreatorRequest.BecomeCreatorDesc becomeCreatorDesc:becomeCreatorDescs) {
-       String message=becomeCreatorDesc.getMessage();
-       List<MultipartFile> files=becomeCreatorDesc.getEvidences();
-       List<Media> mediaList=new ArrayList<>();
-       for(MultipartFile multipartFile:files) {
-         mediaList.add(new Media(MimeTypeUtils.IMAGE_JPEG, multipartFile.getResource()));
-       }
-       List<String> listNameFile= fileStorageService.saveFile(files, TypeFile.BECOME_CREATOR);
-       saveBecomeCreator(becomeCreator,message,listNameFile);
-       UserMessage userMessage1=UserMessage.builder()
-           .media(mediaList)
-           .text(message)
-           .build();
-       userMessages.add(userMessage1);
-     }
-
-    return  chatClient.prompt().advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID,userId))
-        .messages(userMessages.toArray(new UserMessage[0])).call().content();
-  }
 }

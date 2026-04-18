@@ -4,6 +4,7 @@ import com.studyhard.application.dto.request.ChatMessageRequest;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mongo.entity.ChatMessage;
 import com.studyhard.application.mongo.entity.SupportTicket;
+import com.studyhard.application.service.BeginCreatorService;
 import com.studyhard.application.service.SupportTicketService;
 import java.security.Principal;
 import lombok.AccessLevel;
@@ -27,7 +28,7 @@ import org.springframework.stereotype.Controller;
 public class SupportWebSocketController {
 
   SupportTicketService supportTicketService;
-
+  BeginCreatorService beginCreatorService;
   @MessageMapping("chat/support/{ticketId}")
   @SendTo("/queue/support/{ticketId}")
   public void chatSupport(@Payload ChatMessageRequest request, @DestinationVariable String ticketId,
@@ -41,6 +42,12 @@ public class SupportWebSocketController {
   public void moderatorJoin(@DestinationVariable String ticketId, Principal principal) {
     Long userId = Long.valueOf(principal.getName());
     supportTicketService.moderatorJoin(ticketId, userId);
+  }
+
+  @MessageMapping("chat/support/creator")
+  @SendTo("/queue/support/{ticketId}")
+  public void becomeCreator(Principal principal) {
+    Long userId = Long.valueOf(principal.getName());
   }
 
   @MessageExceptionHandler(StudyHardException.class)

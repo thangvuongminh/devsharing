@@ -65,6 +65,10 @@ public class SecurityConfig {
             (authorize) -> authorize.requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
                 .permitAll()
                 // user account
+                .requestMatchers("/contents/add/cart").permitAll()
+                .requestMatchers("/categories/getAll").permitAll()
+                .requestMatchers("/contents/search").permitAll()
+                .requestMatchers("/images/**").permitAll()
                 .requestMatchers("/user/account/**").permitAll()
                 .requestMatchers("/test").permitAll()
                 .requestMatchers("/ws/**").permitAll()
@@ -73,6 +77,7 @@ public class SecurityConfig {
         .oauth2ResourceServer(oauth2 -> oauth2.jwt(
             jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)))
         .addFilterAfter(new CustomFilter(redisTemplate), BearerTokenAuthenticationFilter.class)
+        .addFilterAfter(new FilterLastChangePassword(redisTemplate),CustomFilter.class)
         .formLogin(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
     ;
@@ -80,24 +85,6 @@ public class SecurityConfig {
     return http.build();
   }
 
-//  @Bean
-//  @Order(2)
-//  public SecurityFilterChain securityFilterChainGoogle(HttpSecurity http
-//  ) throws Exception {
-//    http.csrf(AbstractHttpConfigurer::disable)
-//        .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()));
-//            http.securityMatcher("/user/account/google","/v3/api-docs/**", "/swagger-ui/**").authorizeHttpRequests(
-//                (authorize) -> authorize.
-//                    requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll().
-//                    requestMatchers(
-//                    request -> {
-//                      String bearerToken = request.getHeader("Authorization");
-//                      return bearerToken != null && bearerToken.startsWith("Bearer ");
-//                    }
-//                ).permitAll().anyRequest().authenticated()
-//            );
-//    return http.build();
-//  }
 
   @Bean
   @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -131,7 +118,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:5173"));
+    corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:5173","http://localhost:5174"));
     corsConfiguration.addAllowedHeader("*");
     corsConfiguration.addAllowedMethod("*");
     corsConfiguration.setAllowCredentials(true);

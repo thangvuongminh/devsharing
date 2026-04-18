@@ -3,6 +3,7 @@ package com.studyhard.application.service.impl;
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 
 import com.studyhard.application.config.PresendSupportCustomerEvaluator;
+import com.studyhard.application.config.TranslationsPrePrompt;
 import com.studyhard.application.dto.request.ChatMessageRequest;
 import com.studyhard.application.dto.response.SupportTicketResponse;
 import com.studyhard.application.entity.User;
@@ -75,7 +76,7 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   @NonFinal
   @Autowired
   @Qualifier("evaluationUserMessages")
-  ChatClient  evaluationUserMessages;
+  ChatClient evaluationUserMessages;
   @NonFinal
   @Value("classpath:ai/supportCustomerTicket.st")
   Resource systemPrompt;
@@ -86,7 +87,7 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
     if (checkExistSupportTicket(userId)) {
       throw new StudyHardException(ExceptionEnum.SUPPORT_TICKET_IS_RESOLVED);
     }
-    ChatMessage chatMessage=ChatMessage.builder()
+    ChatMessage chatMessage = ChatMessage.builder()
         .type(MessageType.USER_CHAT)
         .content(request.getContent())
         .userId(userId)
@@ -105,8 +106,8 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   }
 
   public Boolean checkExistSupportTicket(Long userId) {
-    SupportTicket supportTicket = supportTicketRepository.findByUserIdAndStatusIn(userId,
-        List.of(SupportTicketStatus.WAITING_MODERATOR, SupportTicketStatus.AI_PENDING_RESOLVE));
+    SupportTicket supportTicket = supportTicketRepository.findByUserIdAndStatusNotIn(userId,
+        List.of(SupportTicketStatus.RESOLVED));
     if (supportTicket != null) {
       return true;
     }
@@ -141,19 +142,19 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   @Override
   @Transactional
   //important
-  public void chatSupport(ChatMessageRequest request, String ticketId,Long userId) {
+  public void chatSupport(ChatMessageRequest request, String ticketId, Long userId) {
     log.info(ticketId);
     SupportTicket supportTicket = supportTicketRepository.findById(ticketId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.SUPPORT_TICKET_NOT_FOND));
-    Long moderatorId=supportTicket.getHandleByUserId();
-    Boolean isModerator=false;
-    if (moderatorId!=null && moderatorId.equals(userId)) {
-      isModerator =true;
+    Long moderatorId = supportTicket.getHandleByUserId();
+    Boolean isModerator = false;
+    if (moderatorId != null && moderatorId.equals(userId)) {
+      isModerator = true;
     }
     ChatMessage chatMessage = ChatMessage.builder()
         .content(request.getContent())
         .sentAt(Instant.now())
-        .type( isModerator ?MessageType.MODERATOR:MessageType.USER_CHAT)
+        .type(isModerator ? MessageType.MODERATOR : MessageType.USER_CHAT)
         .userId(userId)
         .build();
     List<ChatMessage> chatMessages = supportTicket.getMessages();
@@ -179,7 +180,7 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
         supportTicketRepository.save(supportTicket);
         return;
       }
-    }else {
+    } else {
       messagingTemplate.convertAndSend("/queue/support/" + ticketId, Map.of(
           "content", chatMessage.getContent(),
           "type", chatMessage.getType().name()
@@ -188,9 +189,11 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   }
 
   public String callChatGptSupportCustomer(ChatMessage chatMessage) {
+    TranslationsPrePrompt translationsPrePrompt = new TranslationsPrePrompt(chatClientBuilder);
+    String query = translationsPrePrompt.translate(chatMessage.getContent(),"english");
     log.info(chatMessage.getContent());
     SearchRequest searchRequest = SearchRequest.builder()
-        .query(chatMessage.getContent())
+        .query(query)
         .similarityThreshold(0.6)
         .topK(3)
         .build();
@@ -218,7 +221,8 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   @Override
   public Boolean checkRequestModerator(ChatMessage chatMessage, SupportTicket supportTicket) {
     String historyChat = getHistoryChat(supportTicket);
-    PresendSupportCustomerEvaluator evaluator = new PresendSupportCustomerEvaluator(evaluationUserMessages,
+    PresendSupportCustomerEvaluator evaluator = new PresendSupportCustomerEvaluator(
+        evaluationUserMessages,
         historyChat);
     EvaluationResponse evaluationResponse = evaluator.evaluate(
         new EvaluationRequest(chatMessage.getContent(), null, null));
@@ -233,7 +237,7 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
       );
       Long moderatorId = findModeratorLoadBalancing();
       messagingTemplate.convertAndSendToUser(moderatorId.toString(),
-          "/queue/support" ,
+          "/queue/support",
           Map.of(
               "ticketId", supportTicket.getId(),
               "content", "Có người đang cần hỗ trợ",
@@ -247,21 +251,22 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
   }
 
   @Override
-  public void moderatorJoin(String ticketId,Long userId) {
+  public void moderatorJoin(String ticketId, Long userId) {
     System.out.println("DEBUG: Bắt đầu lưu Ticket với Mod ID: " + userId);
-    Boolean checkRoleModerator=false;
+    Boolean checkRoleModerator = false;
     List<UserRole> userRoles = userRoleRepository.findByUserId(userId);
-        for (UserRole ur : userRoles) {
-          if (ur.getRole().getRoleName().equals(RoleEnum.MODERATOR)){
-            checkRoleModerator=true;
-          }
-        }
+    for (UserRole ur : userRoles) {
+      if (ur.getRole().getRoleName().equals(RoleEnum.MODERATOR)) {
+        checkRoleModerator = true;
+      }
+    }
     if (!checkRoleModerator) {
       throw new StudyHardException(ExceptionEnum.SUPPORT_TICKET_NOT_FOND);
     }
     SupportTicket supportTicket = supportTicketRepository.findById(ticketId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.SUPPORT_TICKET_NOT_FOND));
-    if (!supportTicket.getStatus().equals(SupportTicketStatus.AI_PENDING_RESOLVE)  && !supportTicket.getStatus().equals(SupportTicketStatus.WAITING_MODERATOR) ) {
+    if (!supportTicket.getStatus().equals(SupportTicketStatus.AI_PENDING_RESOLVE)
+        && !supportTicket.getStatus().equals(SupportTicketStatus.WAITING_MODERATOR)) {
       throw new StudyHardException(ExceptionEnum.SUPPORT_TICKET_IS_RESOLVED);
     }
     System.out.println("DEBUG: Bắt đầu lưu Ticket với Mod ID2: " + userId);
@@ -285,5 +290,8 @@ public class SupportCustomerServiceImpl implements SupportTicketService {
     }
 
     return Long.valueOf(modId.toString());
+  }
+  public void conservationChat(){
+
   }
 }
