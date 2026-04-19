@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileStorageService {
-  public void init(Path pathStore) ;
   public List<String>  saveFile(List<MultipartFile> files, TypeFile typeFile);
   public void deleteFile(TypeFile typeFile,List<String> fileNames);
 }

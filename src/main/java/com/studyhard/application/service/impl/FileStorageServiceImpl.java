@@ -38,7 +38,6 @@ public class FileStorageServiceImpl implements FileStorageService {
   public void  firstConstrict(){
      root= Paths.get(uploadDir);
   }
-  @Override
   public void init(Path pathStore) {
     try {
       if(!Files.exists(pathStore)) {

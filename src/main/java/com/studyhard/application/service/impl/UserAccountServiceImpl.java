@@ -240,6 +240,7 @@ public class UserAccountServiceImpl implements UserAccountService {
     Long userId=UserExtractor.getUserId();
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.USERNAME_NOT_FOUND));
+
     if (passwordEncoder.matches(changePasswordRequest.getPassword(), user.getPassword())) {
 
       user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));

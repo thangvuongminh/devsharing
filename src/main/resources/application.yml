@@ -97,3 +97,8 @@ app:
     dir: D:/dev-sharing
   contents:
     url: http://localhost:8090/images
+cloudinary:
+  credentials:
+    cloud_name: ${CLOUDINARY}
+    api_key: ${API_KEY_CLOUDINARY}
+    api_secret: ${API_SECRET_CLOUDINARY}
