@@ -5,4 +5,5 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserProfileService {
   public String  uploadImage(UploadAvatarRequest request);
+  public String getAvatar();
 }
