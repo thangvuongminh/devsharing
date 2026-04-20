@@ -53,6 +53,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -75,7 +76,7 @@ public class ContentServiceImpl implements ContentService {
   CardContentRepository cardContentRepository;
   ContentReviewRepository contentReviewRepository;
   UserRepository userRepository;
-  FileStorageService fileStorageService;
+  CloudinaryServiceImpl fileStorageService;
   WalletService walletService;
   PurchaseContentRepository purchaseContentRepository;
   TransactionRepository transactionRepository;
@@ -85,9 +86,9 @@ public class ContentServiceImpl implements ContentService {
   public ContentDto createContent(CreateContentRequest createContentRequest) {
     Category category = categoryService.getCategoryById(createContentRequest.getCategoryId());
     User user = userRepository.findById(UserExtractor.getUserId()).get();
-    List<String> fileName = fileStorageService.saveFile(List.of(createContentRequest.getThumb()),
+    List<String> public_ips = fileStorageService.saveFile(List.of(createContentRequest.getThumb()),
         TypeFile.CONTENT);
-
+    List<String> thumbs=fileStorageService.getImage(public_ips,false);
     Content content = Content.builder()
         .creator(user)
         .description(createContentRequest.getDescription())
@@ -96,7 +97,7 @@ public class ContentServiceImpl implements ContentService {
         .title(createContentRequest.getTitle())
         .category(category)
         .level(createContentRequest.getContentLevel())
-        .thumb(fileName.get(0))
+        .thumb(thumbs.get(0))
         .status(ContentStatus.DRAFT)
         .createdAt(Instant.now())
         .updatedAt(Instant.now())
