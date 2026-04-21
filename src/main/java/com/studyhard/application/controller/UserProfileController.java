@@ -1,8 +1,10 @@
 package com.studyhard.application.controller;
 
+import com.studyhard.application.dto.ProfileDto;
 import com.studyhard.application.dto.request.UploadAvatarRequest;
 import com.studyhard.application.response.ApiResponse;
 import com.studyhard.application.service.UserProfileService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,10 +12,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,9 +32,11 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal=true)
 public class UserProfileController {
   UserProfileService userProfileService;
-  @PostMapping("/upload/avatar")
+  @PostMapping(value = "/upload/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Operation(summary = "User upload avatar")
+  @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
   public ResponseEntity<ApiResponse<String>> uploadAvatar(@Valid @ModelAttribute UploadAvatarRequest uploadAvatarRequest) {
-    String response =userProfileService.uploadImage(uploadAvatarRequest);
+    String response =userProfileService.uploadAvatar(uploadAvatarRequest);
     return ResponseEntity.ok().body(ApiResponse.success(response));
   }
   @GetMapping("/get/avatar")
@@ -37,6 +46,26 @@ public class UserProfileController {
       response="User not uploadAvatar";
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.success(response));
     }
+    return ResponseEntity.ok().body(ApiResponse.success(response));
+  }
+  @DeleteMapping("/delete/avatar")
+  public ResponseEntity<ApiResponse<String>> deleteAvatar(@Valid @ModelAttribute UploadAvatarRequest uploadAvatarRequest) {
+    String response =userProfileService.getAvatar();
+    if(response==null){
+      response="User not uploadAvatar";
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.success(response));
+    }
+    return ResponseEntity.ok().body(ApiResponse.success(response));
+  }
+
+  @PutMapping("/update")
+  public ResponseEntity<ApiResponse<ProfileDto>> updateProfile(@Valid @RequestBody ProfileDto profileDto) {
+     ProfileDto response= userProfileService.updateProfile(profileDto);
+    return ResponseEntity.ok().body(ApiResponse.success(response));
+  }
+  @GetMapping("/get/profile")
+  public ResponseEntity<ApiResponse<ProfileDto>> getProfile() {
+    ProfileDto response= userProfileService.getProfile();
     return ResponseEntity.ok().body(ApiResponse.success(response));
   }
 }

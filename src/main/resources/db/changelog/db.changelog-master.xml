@@ -11,6 +11,7 @@
   <include file="/db/changelog/ddl/ddl-0004-add-feedback-become_creator.xml" />
   <include file="/db/changelog/ddl/ddl-0005-add-column-thumb-content.xml" />
   <include file="db/changelog/ddl/ddl-0006-add-table-purchase_content.xml" />
+  <include file="db/changelog/ddl/ddl-0007-add-column-fullname-table-userprofile.xml"/>
 <!--  init-data-->
   <include file="/db/changelog/data/data-0001-data.xml"/>
 </databaseChangeLog>
