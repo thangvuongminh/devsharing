@@ -88,6 +88,10 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
       HttpStatus.BAD_REQUEST),
   CONTENT_NOT_EXIST_IN_CART("CONTENT_NOT_EXIST_IN_CART",
       "The requested content does not exist in the cart.", HttpStatus.NOT_FOUND),
+
+  // profile
+  NICK_NAME_ALREADY_EXIST("NICK_NAME_ALREADY_EXIST","Nick name already exist", HttpStatus.CONFLICT),
+  NICK_NAME_NOT_FOUND("NICK_NAME_NOT_FOUND","Nick name not found", HttpStatus.NOT_FOUND),
   // role
 
   ROLE_NOT_FOUND("ROLE_NOT_FOUND", "System role configuration error. Please contact administrator.",

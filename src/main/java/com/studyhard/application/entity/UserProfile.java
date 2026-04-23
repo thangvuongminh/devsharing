@@ -56,9 +56,14 @@ public class UserProfile {
   @Column(name = "created_at", updatable = false)
   Instant createdAt;
 
+  @Column(name = "full_name")
+  String fullName;
+
   @Column(name = "updated_at")
   Instant updatedAt;
 
+  @Column(name = "nick_name")
+  String nickName;
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, unique = true)
   User user;

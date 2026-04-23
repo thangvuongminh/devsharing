@@ -29,7 +29,7 @@ public class UserProfileServiceImpl implements UserProfileService {
   UserMapper userMapper;
   @Override
   public String uploadAvatar(UploadAvatarRequest request) {
-    String public_id = cloudinaryService.saveFile(request.getFile(), TypeFile.AVATAR);
+    String public_id = cloudinaryService.saveFile(request.getAvatar(), TypeFile.AVATAR);
     String linkImage = cloudinaryService.getImage(public_id, false);
     Long userId = UserExtractor.getUserId();
     UserProfile userProfile = getOrCreateProfile(userId);
@@ -47,12 +47,27 @@ public class UserProfileServiceImpl implements UserProfileService {
     UserProfile userProfile = getOrCreateProfile(userId);
     return cloudinaryService.getImage(userProfile.getAvatar(), false);
   }
-
+  public  Boolean checkExistNickname(String nickname){
+    UserProfile userProfile= userProfileRepository.findUserByNickName(nickname);
+    return userProfile != null;
+  }
   @Override
   public ProfileDto updateProfile(ProfileDto request) {
     UserProfile userProfile=getOrCreateProfile(UserExtractor.getUserId());
+    if(request.getFullName()!=null){
+      userProfile.setFullName(request.getFullName());
+    }
+    if(request.getNickName()!=null){
+      if(checkExistNickname(request.getNickName())){
+        throw  new StudyHardException(ExceptionEnum.NICK_NAME_ALREADY_EXIST);
+      }
+      userProfile.setNickName(request.getNickName());
+    }
     if(request.getAddress() != null) {
       userProfile.setAddress(request.getAddress());
+    }
+    if(request.getGender() != null) {
+      userProfile.setGender(request.getGender());
     }
     if (request.getBio() != null) {
       userProfile.setBio(request.getBio());
@@ -85,7 +100,25 @@ public class UserProfileServiceImpl implements UserProfileService {
   @Override
   public ProfileDto getProfile() {
     UserProfile userProfile = getOrCreateProfile(UserExtractor.getUserId());
+    if(userProfile.getAvatar()!=null){
+      userProfile.setAvatar(cloudinaryService.getImage(userProfile.getAvatar(), false));
+    }
     return   userMapper.toProfileDto(userProfile);
+  }
+
+  @Override
+  public ProfileDto getProfileByNickName(String nickName) {
+    if(!checkExistNickname(nickName)){
+      throw  new StudyHardException(ExceptionEnum.NICK_NAME_NOT_FOUND);
+    }
+    UserProfile userProfile =userProfileRepository.findUserByNickName(nickName);
+    return userMapper.toProfileDto(userProfile);
+  }
+
+  @Override
+  public String getNickname() {
+    UserProfile userProfile = getOrCreateProfile(UserExtractor.getUserId());
+    return userProfile.getNickName();
   }
 
   public UserProfile getOrCreateProfile(Long userId) {

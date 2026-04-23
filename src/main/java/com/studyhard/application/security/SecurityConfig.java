@@ -65,6 +65,7 @@ public class SecurityConfig {
             (authorize) -> authorize.requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
                 .permitAll()
                 // user account
+                .requestMatchers("/profile/nickname/*").permitAll()
                 .requestMatchers("/contents/add/cart").permitAll()
                 .requestMatchers("/categories/getAll").permitAll()
                 .requestMatchers("/contents/search").permitAll()

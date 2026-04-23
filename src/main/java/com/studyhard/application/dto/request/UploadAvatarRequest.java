@@ -17,5 +17,5 @@ import org.springframework.web.multipart.MultipartFile;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UploadAvatarRequest {
   @ValidFileExtension(message = "File not valid")
-  MultipartFile file;
+  MultipartFile avatar;
 }

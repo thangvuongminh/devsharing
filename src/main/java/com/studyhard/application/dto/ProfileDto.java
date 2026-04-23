@@ -1,5 +1,6 @@
 package com.studyhard.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.studyhard.application.model.GenderEnum;
 import jakarta.validation.constraints.Max;
@@ -20,15 +21,18 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProfileDto {
+  @JsonFormat(shape =  JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd")
   LocalDate birthDate;
   GenderEnum gender;
   String address;
   String bio;
+  Long userId;
+  String fullName;
+  String nickName;
+  String email;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   String avatar;
   String company;
-  @Min(1)
-  @Max(50)
   Long yearOfExperience = 0L;
   String educationLevel;
   String facebook;

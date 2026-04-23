@@ -74,7 +74,7 @@ public class UserAccountController {
     return ResponseEntity.ok(ApiResponse.success(userLoginResponse));
   }
 
-  @PutMapping("/logout")
+  @PostMapping("/logout")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ApiResponse<Void>> logoutUser(HttpServletResponse response) {
     userAccountService.logoutUser(response);

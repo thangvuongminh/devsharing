@@ -21,6 +21,7 @@ public class ProfileResponse {
   LocalDate birthDate;
   GenderEnum gender;
   String address;
+  String fullName;
   String bio;
   String avatar;
   String company;

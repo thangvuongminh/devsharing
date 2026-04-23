@@ -9,4 +9,6 @@ public interface UserProfileService {
   public String getAvatar();
   public ProfileDto updateProfile(ProfileDto request);
   public  ProfileDto getProfile();
+  public  ProfileDto getProfileByNickName(String nickName);
+  public  String getNickname();
 }
