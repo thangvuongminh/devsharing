@@ -19,7 +19,9 @@ public abstract class ContentMapper {
   public String contentsUrl;
   public   abstract   ContentDto toContentDto(Content content);
   @Mapping(source = "category.name", target = "categoryName")
-  @Mapping(target = "thumb",expression = "java(contentsUrl + \"/\" + content.getThumb())")
-  public  abstract ContentSummaryDto toContentSummaryDto(Content content);
+  @Mapping(target = "nickname" ,source = "content.creator.userProfile.nickName")
+  @Mapping(target = "creatorId" ,source = "content.creator.id")
+  @Mapping(target = "urlAvatarAuthor" ,source = "content.creator.userProfile.avatar")
+  public abstract    ContentSummaryDto toContentSummaryDto(Content content);
   public  abstract ContentReviewResponse toContentReviewResponse(ContentReview contentReview);
 }

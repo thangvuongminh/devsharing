@@ -1,5 +1,6 @@
 package com.studyhard.application.repository;
 
+import com.studyhard.application.entity.Role;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.entity.UserRole;
 import java.util.List;
@@ -13,4 +14,8 @@ public interface UserRoleRepository extends CrudRepository<UserRole,Long> {
   List<UserRole> findByUserId(Long userId);
   @Query("SELECT ur FROM UserRole ur JOIN FETCH ur.role WHERE ur.user.id = :userId")
   List<UserRole> findByUserCustomQuery(Long userId);
+
+  UserRole findByRole(Role role);
+
+  UserRole findByUserAndRole(User user, Role role);
 }

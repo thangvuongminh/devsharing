@@ -112,6 +112,9 @@ public class UserProfileServiceImpl implements UserProfileService {
       throw  new StudyHardException(ExceptionEnum.NICK_NAME_NOT_FOUND);
     }
     UserProfile userProfile =userProfileRepository.findUserByNickName(nickName);
+    if(userProfile.getAvatar()!=null){
+      userProfile.setAvatar(cloudinaryService.getImage(userProfile.getAvatar(), false));
+    }
     return userMapper.toProfileDto(userProfile);
   }
 

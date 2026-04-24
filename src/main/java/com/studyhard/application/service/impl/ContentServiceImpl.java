@@ -232,7 +232,13 @@ public class ContentServiceImpl implements ContentService {
         contents.add(contentRepository.findById(contentId)
             .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)));
       }
-      return contents.stream().map(contentMapper::toContentSummaryDto).toList();
+      List<ContentSummaryDto> contentSummaries = contents.stream().map(contentMapper::toContentSummaryDto).toList();
+      for(ContentSummaryDto contentSummaryDto:contentSummaries){
+        if(contentSummaryDto.getUrlAvatarAuthor()!=null){
+          contentSummaryDto.setUrlAvatarAuthor(fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(),false));
+        }
+      }
+      return contentSummaries;
     }
     return List.of();
   }
@@ -335,7 +341,14 @@ public class ContentServiceImpl implements ContentService {
           contentSearchRequest);
       }
     Page<Content> contentPage = contentRepository.findAll(filter, pageable);
-    return contentPage.map(contentMapper::toContentSummaryDto);
+    Page<ContentSummaryDto> contentSummaryDtoPage=contentPage.map(contentMapper::toContentSummaryDto);
+    List<ContentSummaryDto> contentSummaryDtoList=contentSummaryDtoPage.getContent();
+    for(ContentSummaryDto contentSummaryDto:contentSummaryDtoList){
+      if(contentSummaryDto.getUrlAvatarAuthor()!=null){
+        contentSummaryDto.setUrlAvatarAuthor(fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(),false));
+      }
+    }
+    return contentSummaryDtoPage;
   }
 
   @Override

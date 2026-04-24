@@ -24,6 +24,8 @@ public class ContentSummaryDto {
   String title;
   String description;
   Long creatorId;
+  String nickname;
+  String urlAvatarAuthor;
   String categoryName;
   ContentStatus status;
   ContentLevel level;

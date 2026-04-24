@@ -1,5 +1,6 @@
 package com.studyhard.application.config;
 
+import com.studyhard.application.tool.RegisterCreator;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -8,20 +9,12 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClient.Builder;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
-import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.mongo.MongoChatMemoryRepository;
 import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
-import org.springframework.ai.rag.preretrieval.query.transformation.QueryTransformer;
-import org.springframework.ai.rag.preretrieval.query.transformation.TranslationQueryTransformer;
-import org.springframework.ai.rag.retrieval.search.DocumentRetriever;
-import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
 import org.springframework.ai.tool.execution.DefaultToolExecutionExceptionProcessor;
 import org.springframework.ai.tool.execution.ToolExecutionExceptionProcessor;
-import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,8 +28,9 @@ public class AiConfig {
 
   MongoChatMemoryRepository memoryRepository;
   @NonFinal
-  @Value("classpath:ai/contentModerator.st")
+  @Value("classpath:ai/promptRegisterCreator.st")
   Resource defaultSystem;
+
 
   @Bean
   ToolExecutionExceptionProcessor toolExecutionExceptionProcessor() {
@@ -62,16 +56,19 @@ public class AiConfig {
         .build();
     return chatClientBuilder
         .defaultOptions(chatOptions)
+
             .
         defaultAdvisors(simpleLoggerAdvisor, customUsageAdvisor)
         .build();
   }
   @Bean(name = "checkEligibilityCreator")
-  public  ChatClient chatClientForCreator(ChatClient.Builder chatClientBuilder,CustomUsageAdvisor customUsageAdvisor,ChatMemory chatMemory) {
+  public  ChatClient chatClientForCreator(ChatClient.Builder chatClientBuilder,CustomUsageAdvisor customUsageAdvisor,
+      RegisterCreator  registerCreator) {
     SimpleLoggerAdvisor simpleLoggerAdvisor = new SimpleLoggerAdvisor();
-    MessageChatMemoryAdvisor messageChatMemoryAdvisor= MessageChatMemoryAdvisor.builder(chatMemory).build() ;
     return chatClientBuilder
         .defaultAdvisors(simpleLoggerAdvisor,customUsageAdvisor)
+        .defaultTools(registerCreator)
+        .defaultSystem(defaultSystem)
         .build();
   }
 

@@ -2,9 +2,6 @@ package com.studyhard.application.controller;
 
 import com.studyhard.application.dto.request.ChatMessageRequest;
 import com.studyhard.application.exception.StudyHardException;
-import com.studyhard.application.mongo.entity.ChatMessage;
-import com.studyhard.application.mongo.entity.SupportTicket;
-import com.studyhard.application.service.BeginCreatorService;
 import com.studyhard.application.service.SupportTicketService;
 import java.security.Principal;
 import lombok.AccessLevel;
@@ -16,9 +13,7 @@ import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -28,7 +23,6 @@ import org.springframework.stereotype.Controller;
 public class SupportWebSocketController {
 
   SupportTicketService supportTicketService;
-  BeginCreatorService beginCreatorService;
   @MessageMapping("chat/support/{ticketId}")
   @SendTo("/queue/support/{ticketId}")
   public void chatSupport(@Payload ChatMessageRequest request, @DestinationVariable String ticketId,

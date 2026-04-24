@@ -2,9 +2,7 @@ package com.studyhard.application.controller;
 
 import com.studyhard.application.dto.request.ChatMessageRequest;
 import com.studyhard.application.dto.response.SupportTicketResponse;
-import com.studyhard.application.mongo.entity.ChatMessage;
 import com.studyhard.application.response.ApiResponse;
-import com.studyhard.application.service.BeginCreatorService;
 import com.studyhard.application.service.SupportTicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
@@ -28,7 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class SupportCustomerController {
 
   SupportTicketService supportTicketService;
-  BeginCreatorService beginCreatorService;
   @GetMapping("/all")
   @Operation(description = "get all support ticket")
   @PreAuthorize("hasAnyRole('CONSUMER','CREATOR')")
@@ -53,14 +50,6 @@ public class SupportCustomerController {
   public ResponseEntity<ApiResponse<List<SupportTicketResponse>>> getAllSupportTicket(
       @RequestBody ChatMessageRequest chatMessage) {
     List<SupportTicketResponse> response = supportTicketService.getAllSupportTicket();
-    return ResponseEntity.ok().body(ApiResponse.success(response));
-  }
-  @GetMapping("/upload/images")
-  @Operation(description = "Begin creator")
-  @PreAuthorize("hasRole('CONSUMER')")
-  public ResponseEntity<ApiResponse<List<String>>> uploadImagesBeginCreator(
-      @ModelAttribute List<MultipartFile> files) {
-    List<String> response = beginCreatorService.uploadImagesBeginCreator(files);
     return ResponseEntity.ok().body(ApiResponse.success(response));
   }
 //  @GetMapping("ticket/{ticketID")
