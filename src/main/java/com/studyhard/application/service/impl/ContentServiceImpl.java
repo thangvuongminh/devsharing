@@ -6,6 +6,7 @@ import com.studyhard.application.dto.request.ContentReviewRequest;
 import com.studyhard.application.dto.request.ContentSearchRequest;
 import com.studyhard.application.dto.request.CreateContentRequest;
 import com.studyhard.application.dto.response.ContentReviewResponse;
+import com.studyhard.application.entity.Block;
 import com.studyhard.application.entity.Category;
 import com.studyhard.application.entity.Content;
 import com.studyhard.application.entity.ContentReview;
@@ -59,6 +60,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,11 +91,11 @@ public class ContentServiceImpl implements ContentService {
     User user = userRepository.findById(UserExtractor.getUserId()).get();
     List<String> public_ips = fileStorageService.saveFile(List.of(createContentRequest.getThumb()),
         TypeFile.CONTENT);
-    List<String> thumbs=fileStorageService.getImage(public_ips,false);
+    List<String> thumbs = fileStorageService.getImage(public_ips, false);
     Content content = Content.builder()
         .creator(user)
         .description(createContentRequest.getDescription())
-        .price(createContentRequest.getPrice().divide(WalletServiceImpl.VND_TO_CREDIT_RATE,0,
+        .price(createContentRequest.getPrice().divide(WalletServiceImpl.VND_TO_CREDIT_RATE, 0,
             RoundingMode.HALF_UP))
         .title(createContentRequest.getTitle())
         .category(category)
@@ -203,8 +206,49 @@ public class ContentServiceImpl implements ContentService {
     purchaseContentRepository.save(purchaseContent);
   }
 
+  public void hiddenBlockContent(Content content) {
+    List<Block> blocks = content.getBlocks();
+    for (Block block : blocks) {
+      for (Block block2 : block.getChildren()) {
+        if (!block2.getIsFree()) {
+          block2.setTextContent(null);
+        }
+      }
+    }
+  }
+
   @Override
-  public List<ContentDto> getAllContent(Pageable pageable) {
+  public ContentDto getContentDetailById(Long contentId) {
+    Content content = contentRepository.findContentDetailById(contentId);
+    if (content == null) {
+      throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
+    }
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (!authentication.getName().equals("anonymousUser")) {
+      if (!content.getCreator().getId().equals(UserExtractor.getUserId())) {
+        if(content.getStatus().equals(ContentStatus.PUBLISHED)){
+          return contentMapper.toContentDto(content);
+        }
+        if(!content.getStatus().equals(ContentStatus.PREMIUM)) {
+          throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
+        }
+        Optional<PurchaseContent> purchaseContent = purchaseContentRepository.findByContentIdAndUserId(
+            contentId, UserExtractor.getUserId());
+        if (purchaseContent.isPresent()) {
+          hiddenBlockContent(content);
+        }
+      }
+    } else {
+      hiddenBlockContent(content);
+    }
+    ContentDto contentDto = contentMapper.toContentDto(content);
+    contentDto.setUrlAvatarAuthor(
+        fileStorageService.getImage(contentDto.getUrlAvatarAuthor(), false));
+    return contentDto;
+  }
+
+  @Override
+  public List<ContentDto> getAllContent() {
     List<Content> contents = contentRepository.findAllByCreator_Id(UserExtractor.getUserId());
     return contents.stream().map(contentMapper::toContentDto).toList();
   }
@@ -219,7 +263,7 @@ public class ContentServiceImpl implements ContentService {
   }
 
   @Override
-  public List<ContentSummaryDto> getAllCard( ) {
+  public List<ContentSummaryDto> getAllCard() {
     Long userId = UserExtractor.getUserId();
     Optional<CartContent> cartContent = cardContentRepository.findById(userId);
     if (cartContent.isPresent()) {
@@ -232,10 +276,12 @@ public class ContentServiceImpl implements ContentService {
         contents.add(contentRepository.findById(contentId)
             .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND)));
       }
-      List<ContentSummaryDto> contentSummaries = contents.stream().map(contentMapper::toContentSummaryDto).toList();
-      for(ContentSummaryDto contentSummaryDto:contentSummaries){
-        if(contentSummaryDto.getUrlAvatarAuthor()!=null){
-          contentSummaryDto.setUrlAvatarAuthor(fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(),false));
+      List<ContentSummaryDto> contentSummaries = contents.stream()
+          .map(contentMapper::toContentSummaryDto).toList();
+      for (ContentSummaryDto contentSummaryDto : contentSummaries) {
+        if (contentSummaryDto.getUrlAvatarAuthor() != null) {
+          contentSummaryDto.setUrlAvatarAuthor(
+              fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(), false));
         }
       }
       return contentSummaries;
@@ -335,17 +381,19 @@ public class ContentServiceImpl implements ContentService {
   @Transactional(readOnly = true)
   public Page<ContentSummaryDto> searchContentAnyUsers(ContentSearchRequest contentSearchRequest,
       Pageable pageable) {
-    Specification<Content> filter=null;
-    if(contentSearchRequest!=null){
-      filter=ContentPreSpecification.withFiltersUnLimited(
+    Specification<Content> filter = null;
+    if (contentSearchRequest != null) {
+      filter = ContentPreSpecification.withFiltersUnLimited(
           contentSearchRequest);
-      }
+    }
     Page<Content> contentPage = contentRepository.findAll(filter, pageable);
-    Page<ContentSummaryDto> contentSummaryDtoPage=contentPage.map(contentMapper::toContentSummaryDto);
-    List<ContentSummaryDto> contentSummaryDtoList=contentSummaryDtoPage.getContent();
-    for(ContentSummaryDto contentSummaryDto:contentSummaryDtoList){
-      if(contentSummaryDto.getUrlAvatarAuthor()!=null){
-        contentSummaryDto.setUrlAvatarAuthor(fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(),false));
+    Page<ContentSummaryDto> contentSummaryDtoPage = contentPage.map(
+        contentMapper::toContentSummaryDto);
+    List<ContentSummaryDto> contentSummaryDtoList = contentSummaryDtoPage.getContent();
+    for (ContentSummaryDto contentSummaryDto : contentSummaryDtoList) {
+      if (contentSummaryDto.getUrlAvatarAuthor() != null) {
+        contentSummaryDto.setUrlAvatarAuthor(
+            fileStorageService.getImage(contentSummaryDto.getUrlAvatarAuthor(), false));
       }
     }
     return contentSummaryDtoPage;
@@ -353,7 +401,8 @@ public class ContentServiceImpl implements ContentService {
 
   @Override
   public ContentDto accessContentPublish(Long contentId) {
-    Content content = contentRepository.findById(contentId).orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
+    Content content = contentRepository.findById(contentId)
+        .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
     return contentMapper.toContentDto(content);
   }
 

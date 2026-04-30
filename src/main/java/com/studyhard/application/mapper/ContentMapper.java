@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 public abstract class ContentMapper {
   @Value("${app.contents.url}")
   public String contentsUrl;
+  @Mapping(target = "nickname" ,source = "content.creator.userProfile.nickName")
+  @Mapping(target = "creatorId" ,source = "content.creator.id")
+  @Mapping(target = "urlAvatarAuthor" ,source = "content.creator.userProfile.avatar")
   public   abstract   ContentDto toContentDto(Content content);
   @Mapping(source = "category.name", target = "categoryName")
   @Mapping(target = "nickname" ,source = "content.creator.userProfile.nickName")

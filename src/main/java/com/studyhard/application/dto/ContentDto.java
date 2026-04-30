@@ -22,6 +22,7 @@ public class ContentDto {
   ContentLevel contentLevel;
   Long creatorId;
   String nickname;
+  String urlAvatarAuthor;
   String thumb;
   CategoryDto category;
   BigDecimal price;

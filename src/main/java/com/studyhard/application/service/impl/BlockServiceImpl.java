@@ -1,5 +1,6 @@
 package com.studyhard.application.service.impl;
 
+import com.studyhard.application.dto.BlockDto;
 import com.studyhard.application.dto.request.CreateBlockRequest;
 import com.studyhard.application.dto.request.MoveBlockRequest;
 import com.studyhard.application.dto.request.UpdateBlockRequest;
@@ -8,12 +9,15 @@ import com.studyhard.application.entity.Content;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
+import com.studyhard.application.mapper.BlockMapper;
 import com.studyhard.application.repository.BlockRepository;
 import com.studyhard.application.repository.ContentRepository;
 import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.service.BlockService;
 import com.studyhard.application.utils.UserExtractor;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,35 +30,45 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class BlockServiceImpl implements BlockService {
+
+  BlockMapper blockMapper;
   ContentRepository contentRepository;
   BlockRepository blockRepository;
   UserRepository userRepository;
+
   @Override
   @Transactional
-  public Block createBlock(Long contentId, CreateBlockRequest createBlockRequest) {
+  public BlockDto createBlock(Long contentId, CreateBlockRequest createBlockRequest) {
     Content content = contentRepository.findById(contentId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
-    User user= userRepository.findById(UserExtractor.getUserId()).get();
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
     Block parentContentBlock = null;
+    Long sizeCourse = null;
     if (createBlockRequest.getParentBlockId() != null) {
       parentContentBlock = blockRepository.findById(createBlockRequest.getParentBlockId())
           .orElseThrow(() -> new StudyHardException(ExceptionEnum.BLOCK_NOT_FOUND));
       if (!parentContentBlock.getContent().getId().equals(contentId)) {
         throw new StudyHardException(ExceptionEnum.PARENT_BLOCK_NOT_IN_SAME_CONTENT);
       }
+      sizeCourse = blockRepository.countByParentBlockId(createBlockRequest.getParentBlockId());
+    } else {
+      sizeCourse = blockRepository.countByContentIdAndParentBlockIdIsNull(contentId);
+    }
+    if (sizeCourse < createBlockRequest.getPosition()) {
+      createBlockRequest.setPosition(sizeCourse.intValue());
     }
     adjustPositionBlock(contentId, createBlockRequest.getParentBlockId(),
         createBlockRequest.getPosition(), false);
     Block contentBlock = Block.builder().content(content)
         .parentBlock(parentContentBlock).textContent(createBlockRequest.getTextContent())
         .position(createBlockRequest.getPosition()).isFree(createBlockRequest.getIsFree())
-        .properties(createBlockRequest.getProperties()).type(createBlockRequest.getType())
+        .type(createBlockRequest.getType())
         .createdAt(Instant.now()).updatedAt(Instant.now()).build();
     blockRepository.save(contentBlock);
-    return contentBlock;
+    return blockMapper.toBlockDto(contentBlock);
   }
 
   @Override
@@ -82,13 +96,12 @@ public class BlockServiceImpl implements BlockService {
   @Transactional
   public void deleteContentBlock(Long contentId, Long blockId) {
     Block contentBlock = checkAuthorizeContent(contentId, blockId);
-    Long parentBlockId=null;
+    Long parentBlockId = null;
     if (contentBlock.getParentBlock() != null) {
       parentBlockId = contentBlock.getParentBlock().getId();
     }
-    adjustPositionBlock(contentId, parentBlockId,contentBlock.getPosition(),true);
-
-    blockRepository.deleteById(blockId);
+    adjustPositionBlock(contentId, parentBlockId, contentBlock.getPosition(), true);
+    blockRepository.delete(contentBlock);
   }
 
   @Override
@@ -96,16 +109,40 @@ public class BlockServiceImpl implements BlockService {
     return checkAuthorizeContent(contentId, blockId);
   }
 
+  public void swapPositionInParentBlock(Block blockMove, Integer newPosition) {
+    Block oldBlock = blockRepository.findByPosition(newPosition)
+        .orElseThrow(() -> new StudyHardException(ExceptionEnum.BLOCK_NOT_FOUND));
+    oldBlock.setPosition(blockMove.getPosition());
+    blockMove.setPosition(newPosition);
+    blockRepository.save(oldBlock);
+    blockRepository.save(blockMove);
+  }
+
   @Override
-  public Block moveContentBlock(Long contentId, Long blockId,
+  public void moveContentBlock(Long contentId, Long blockId,
       MoveBlockRequest moveBlockRequest) {
-    return null;
+    Block blockMove = checkAuthorizeContent(contentId, blockId);
+    if (moveBlockRequest.getNewParentBlockId() == null || blockMove.getParentBlock().getId()
+        .equals(moveBlockRequest.getNewParentBlockId())) {
+      swapPositionInParentBlock(blockMove, moveBlockRequest.getNewPositionBlock());
+    } else {
+      Block newParentContentBlock = blockRepository.findById(moveBlockRequest.getNewParentBlockId())
+          .orElseThrow(() -> new StudyHardException(ExceptionEnum.BLOCK_NOT_FOUND));
+      if (!newParentContentBlock.getContent().getId().equals(contentId)) {
+        throw new StudyHardException(ExceptionEnum.PARENT_BLOCK_NOT_IN_SAME_CONTENT);
+      }
+      adjustPositionBlock(contentId, blockMove.getParentBlock().getId(),blockMove.getPosition(), true);
+      adjustPositionBlock(contentId, newParentContentBlock.getId(),moveBlockRequest.getNewPositionBlock(), false);
+      blockMove.setParentBlock(newParentContentBlock);
+      blockMove.setPosition(moveBlockRequest.getNewPositionBlock());
+      blockRepository.save(blockMove);
+    }
   }
 
   public Block checkAuthorizeContent(Long contentId, Long blockId) {
     Content content = contentRepository.findById(contentId)
         .orElseThrow(() -> new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND));
-    User user= userRepository.findById(UserExtractor.getUserId()).get();
+    User user = userRepository.findById(UserExtractor.getUserId()).get();
     if (!content.getCreator().equals(user)) {
       throw new StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
     }
@@ -114,7 +151,7 @@ public class BlockServiceImpl implements BlockService {
   }
 
   public void adjustPositionBlock(Long contentId, Long parentBlockId, Integer positionBlock,
-      Boolean isDeleted) {
+      Boolean isDelete) {
     List<Block> contentBlockList;
     if (parentBlockId == null) {
       contentBlockList = blockRepository.findByContentIdAndPositionIsNotNullOrderByPositionAsc(
@@ -123,11 +160,9 @@ public class BlockServiceImpl implements BlockService {
       contentBlockList = blockRepository.findByParentBlockIdAndPositionIsNotNullOrderByPosition(
           parentBlockId);
     }
-    contentBlockList.stream().filter(contentBlock -> contentBlock.getPosition() >= positionBlock)
-        .forEach(contentBlock -> {
-          contentBlock.setPosition(
-              isDeleted ? contentBlock.getPosition() - 1 : contentBlock.getPosition() + 1);
-        });
+    contentBlockList.stream().filter(block -> block.getPosition() >= positionBlock).forEach(
+        block -> block.setPosition(isDelete ? block.getPosition() - 1 : block.getPosition() + 1)
+    );
     blockRepository.saveAll(contentBlockList);
   }
 

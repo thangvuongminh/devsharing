@@ -17,7 +17,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MoveBlockRequest {
-  Integer newParentBlockId;
+  Long newParentBlockId;
   @NotNull(message = "{block.position.notNull}")
   @Min(value = 1,message = "{block.position.min}")
   Integer newPositionBlock;

@@ -66,6 +66,7 @@ public class SecurityConfig {
                 .permitAll()
                 // user account
                 .requestMatchers("/profile/nickname/*").permitAll()
+                .requestMatchers("/contents/*/detail").permitAll()
                 .requestMatchers("/contents/add/cart").permitAll()
                 .requestMatchers("/categories/getAll").permitAll()
                 .requestMatchers("/contents/search").permitAll()

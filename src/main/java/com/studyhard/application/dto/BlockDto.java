@@ -23,7 +23,6 @@ public class BlockDto {
   Long parentBlockId;
   BlockType type;
   String textContent;
-  String properties; // JSON string
   Integer position;
   Boolean isFree;
   Instant createdAt;

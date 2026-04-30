@@ -26,4 +26,6 @@ public interface ContentRepository extends JpaRepository<Content,Long>,
   Page<Content> findByStatus(ContentStatus status, Pageable pageable);
   @EntityGraph(attributePaths = {"creator"})
   List<Content> findAllByCreator_Id(Long creatorId);
+  @EntityGraph(attributePaths = {"blocks"})
+  Content findContentDetailById(Long contentId);
 }

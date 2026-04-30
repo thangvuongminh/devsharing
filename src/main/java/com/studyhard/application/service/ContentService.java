@@ -36,8 +36,9 @@ public interface ContentService {
 
   public void purchaseContent(Long contentId);
 
+  public ContentDto getContentDetailById(Long contentId);
 
-  public  List<ContentDto> getAllContent(Pageable pageable);
+  public  List<ContentDto> getAllContent();
 
   public  ContentDto accessContent(Long contentId);
 //  public Content getContentById(Long id);

@@ -66,17 +66,18 @@ public class ContentController {
     return ResponseEntity.ok().body(ApiResponse.success(contentDto));
   }
 
-  @GetMapping("/all/contests")
+  @GetMapping("/{contentId}/detail")
+  @Operation(summary = "Get content detail")
+  public ResponseEntity<ApiResponse<ContentDto>> getContentDetailById(@PathVariable String contentId) {
+    ContentDto contentDto = contentService.getContentDetailById(Long.valueOf(contentId));
+    return ResponseEntity.ok().body(ApiResponse.success(contentDto));
+  }
+
+  @GetMapping("/all/create/me")
   @PreAuthorize("hasRole('CREATOR')")
   @Operation(summary = "Get all contents by id only user", description = "Get all contents")
-  public ResponseEntity<ApiResponse<List<ContentDto>>> getAllContents(@Parameter(hidden = true)
-  @PageableDefault(
-      page = 0,
-      size = 20,
-      sort = "createdAt",
-      direction = Direction.DESC
-  ) Pageable pageable) {
-    List<ContentDto> contentDto = contentService.getAllContent(pageable);
+  public ResponseEntity<ApiResponse<List<ContentDto>>> getAllContents() {
+    List<ContentDto> contentDto = contentService.getAllContent();
     return ResponseEntity.ok().body(ApiResponse.success(contentDto));
   }
 

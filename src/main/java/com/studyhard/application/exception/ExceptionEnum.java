@@ -85,6 +85,7 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
   BLOCK_NOT_FOUND("BLOCK_NOT_FOUND", "Block not found", HttpStatus.NOT_FOUND),
   PARENT_BLOCK_NOT_IN_SAME_CONTENT("PARENT_BLOCK_NOT_IN_SAME_CONTENT",
       "Parent and child blocks have mismatched content", HttpStatus.BAD_REQUEST),
+  INDEX_OUT_OF_BOUND("INDEX_OUT_OF_BOUND", "Index out of bound", HttpStatus.BAD_REQUEST),
   // ai
   INVALID_ANSWER("INVALID_ANSWER",
       "An error occurred while processing the AI response. Please try again.",

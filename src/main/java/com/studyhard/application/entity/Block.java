@@ -2,6 +2,7 @@ package com.studyhard.application.entity;
 
 import com.studyhard.application.model.BlockType;
 import jakarta.persistence.*;
+import java.util.LinkedList;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

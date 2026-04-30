@@ -3,6 +3,7 @@ package com.studyhard.application.controller;
 
 import com.studyhard.application.dto.BlockDto;
 import com.studyhard.application.dto.request.CreateBlockRequest;
+import com.studyhard.application.dto.request.MoveBlockRequest;
 import com.studyhard.application.dto.request.UpdateBlockRequest;
 import com.studyhard.application.entity.Block;
 import com.studyhard.application.mapper.BlockMapper;
@@ -40,9 +41,8 @@ public class BlockController {
   public ResponseEntity<ApiResponse<BlockDto>> createBlock(
       @PathVariable("contentId") Long contentId,
       @RequestBody CreateBlockRequest createBlockRequest) {
-    Block block = blockService.createBlock(contentId, createBlockRequest);
-    BlockDto contentBlockDto = blockMapper.toBlockDto(block);
-    return ResponseEntity.ok().body(ApiResponse.success(contentBlockDto));
+    BlockDto blockDto = blockService.createBlock(contentId, createBlockRequest);
+    return ResponseEntity.ok().body(ApiResponse.success(blockDto));
   }
 
   @PutMapping("{blockId}")
@@ -50,11 +50,20 @@ public class BlockController {
   )
   public ResponseEntity<ApiResponse<BlockDto>> updateContentBlock(
       @PathVariable("contentId") Long contentId, @PathVariable("blockId") Long blockId,
-      @RequestBody UpdateBlockRequest updateContentBlockRequest) {
+      @RequestBody UpdateBlockRequest request) {
     Block block = blockService.updateContentBlock(contentId, blockId,
-        updateContentBlockRequest);
+        request);
     BlockDto contentBlockDto = blockMapper.toBlockDto(block);
     return ResponseEntity.ok().body(ApiResponse.success(contentBlockDto));
+  }
+  @PutMapping("move/{blockId}")
+  @Operation(summary = "Move Blocks")
+  public ResponseEntity<ApiResponse<String>> moveBlock(
+      @PathVariable("contentId") Long contentId, @PathVariable("blockId") Long blockId,
+      @RequestBody MoveBlockRequest moveBlockRequest) {
+     blockService.moveContentBlock(contentId, blockId,
+        moveBlockRequest);
+    return ResponseEntity.ok().body(ApiResponse.success("Success"));
   }
   @DeleteMapping("{blockId}")
   @Operation(summary = "Delete blocks", description = "Delete an existing block's content"
