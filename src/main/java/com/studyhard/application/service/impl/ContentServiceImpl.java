@@ -1,5 +1,6 @@
 package com.studyhard.application.service.impl;
 
+import com.studyhard.application.dto.BlockDto;
 import com.studyhard.application.dto.ContentDto;
 import com.studyhard.application.dto.ContentSummaryDto;
 import com.studyhard.application.dto.request.ContentReviewRequest;
@@ -83,7 +84,6 @@ public class ContentServiceImpl implements ContentService {
   WalletService walletService;
   PurchaseContentRepository purchaseContentRepository;
   TransactionRepository transactionRepository;
-
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {
@@ -206,10 +206,10 @@ public class ContentServiceImpl implements ContentService {
     purchaseContentRepository.save(purchaseContent);
   }
 
-  public void hiddenBlockContent(Content content) {
-    List<Block> blocks = content.getBlocks();
-    for (Block block : blocks) {
-      for (Block block2 : block.getChildren()) {
+  public void hiddenBlockContent(ContentDto contentDto) {
+    List<BlockDto> blocks = contentDto.getBlocks();
+    for (BlockDto block : blocks) {
+      for (BlockDto block2 : block.getChildren()) {
         if (!block2.getIsFree()) {
           block2.setTextContent(null);
         }
@@ -223,11 +223,12 @@ public class ContentServiceImpl implements ContentService {
     if (content == null) {
       throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
     }
+    ContentDto contentDto = contentMapper.toContentDto(content);
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (!authentication.getName().equals("anonymousUser")) {
       if (!content.getCreator().getId().equals(UserExtractor.getUserId())) {
         if(content.getStatus().equals(ContentStatus.PUBLISHED)){
-          return contentMapper.toContentDto(content);
+          return contentDto;
         }
         if(!content.getStatus().equals(ContentStatus.PREMIUM)) {
           throw new StudyHardException(ExceptionEnum.CONTENT_NOT_FOUND);
@@ -235,13 +236,12 @@ public class ContentServiceImpl implements ContentService {
         Optional<PurchaseContent> purchaseContent = purchaseContentRepository.findByContentIdAndUserId(
             contentId, UserExtractor.getUserId());
         if (purchaseContent.isPresent()) {
-          hiddenBlockContent(content);
+          hiddenBlockContent(contentDto);
         }
       }
     } else {
-      hiddenBlockContent(content);
+      hiddenBlockContent(contentDto);
     }
-    ContentDto contentDto = contentMapper.toContentDto(content);
     contentDto.setUrlAvatarAuthor(
         fileStorageService.getImage(contentDto.getUrlAvatarAuthor(), false));
     return contentDto;

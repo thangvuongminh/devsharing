@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Table(name = "content")
@@ -69,6 +70,8 @@ public class Content {
   Instant updatedAt;
 
   @OneToMany(mappedBy = "content", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Where(clause = "parent_block_id IS NULL")
+  @OrderBy("position ASC")
   @Builder.Default
   List<Block> blocks = new ArrayList<>();
 }

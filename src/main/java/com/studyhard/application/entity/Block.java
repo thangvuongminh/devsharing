@@ -28,7 +28,7 @@ public class Block {
   @Enumerated(EnumType.STRING)
   @Column(name = "type")
   BlockType type;
-
+  String title;
   @Column(name = "text_content", columnDefinition = "TEXT")
   String textContent;
 

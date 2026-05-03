@@ -13,6 +13,7 @@
   <include file="db/changelog/ddl/ddl-0006-add-table-purchase_content.xml" />
   <include file="db/changelog/ddl/ddl-0007-add-column-fullname-table-userprofile.xml"/>
   <include file="db/changelog/ddl/ddl-0008-add-column-nickname-user-profile.xml"/>
+  <include file="db/changelog/ddl/ddl-0009-add-column-title-block.xml"/>
 <!--  init-data-->
   <include file="/db/changelog/data/data-0001-data.xml"/>
 </databaseChangeLog>

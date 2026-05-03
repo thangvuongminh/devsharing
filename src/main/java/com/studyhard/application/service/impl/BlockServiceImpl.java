@@ -6,12 +6,14 @@ import com.studyhard.application.dto.request.MoveBlockRequest;
 import com.studyhard.application.dto.request.UpdateBlockRequest;
 import com.studyhard.application.entity.Block;
 import com.studyhard.application.entity.Content;
+import com.studyhard.application.entity.PurchaseContent;
 import com.studyhard.application.entity.User;
 import com.studyhard.application.exception.ExceptionEnum;
 import com.studyhard.application.exception.StudyHardException;
 import com.studyhard.application.mapper.BlockMapper;
 import com.studyhard.application.repository.BlockRepository;
 import com.studyhard.application.repository.ContentRepository;
+import com.studyhard.application.repository.PurchaseContentRepository;
 import com.studyhard.application.repository.UserRepository;
 import com.studyhard.application.service.BlockService;
 import com.studyhard.application.utils.UserExtractor;
@@ -19,9 +21,12 @@ import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +40,7 @@ public class BlockServiceImpl implements BlockService {
   ContentRepository contentRepository;
   BlockRepository blockRepository;
   UserRepository userRepository;
-
+  PurchaseContentRepository purchaseContentRepository;
   @Override
   @Transactional
   public BlockDto createBlock(Long contentId, CreateBlockRequest createBlockRequest) {
@@ -106,7 +111,20 @@ public class BlockServiceImpl implements BlockService {
 
   @Override
   public Block getContentBlock(Long contentId, Long blockId) {
-    return checkAuthorizeContent(contentId, blockId);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Block block=blockRepository.findById(blockId).orElseThrow(() -> new StudyHardException(ExceptionEnum.BLOCK_NOT_FOUND));
+    if (block.getIsFree()){
+      return block;
+    }
+    if(block.getContent().getCreator().getId().equals(UserExtractor.getUserId()) && block.getContent().getId().equals(UserExtractor.getUserId())) {
+      return block;
+    }else {
+      Optional<PurchaseContent> purchaseContent=purchaseContentRepository.findByContentIdAndUserId(contentId, UserExtractor.getUserId());
+      if (purchaseContent.isEmpty()) {
+        throw new  StudyHardException(ExceptionEnum.UNAUTHORIZE_CONTENT_ACCESS);
+      }
+    }
+    return  block;
   }
 
   public void swapPositionInParentBlock(Block blockMove, Integer newPosition) {
