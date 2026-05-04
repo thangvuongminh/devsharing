@@ -69,8 +69,7 @@ public class BlockController {
   @Operation(summary = "Delete blocks", description = "Delete an existing block's content"
   )
   public ResponseEntity<ApiResponse<BlockDto>> deleteContentBlock(
-      @PathVariable("contentId") Long contentId, @PathVariable("blockId") Long blockId,
-      @RequestBody UpdateBlockRequest updateContentBlockRequest) {
+      @PathVariable("contentId") Long contentId, @PathVariable("blockId") Long blockId) {
     blockService.deleteContentBlock(contentId, blockId);
     return ResponseEntity.ok().body(ApiResponse.success(null));
   }

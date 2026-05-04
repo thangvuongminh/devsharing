@@ -70,6 +70,7 @@ public class BlockServiceImpl implements BlockService {
     Block contentBlock = Block.builder().content(content)
         .parentBlock(parentContentBlock).textContent(createBlockRequest.getTextContent())
         .position(createBlockRequest.getPosition()).isFree(createBlockRequest.getIsFree())
+        .title(createBlockRequest.getTitle())
         .type(createBlockRequest.getType())
         .createdAt(Instant.now()).updatedAt(Instant.now()).build();
     blockRepository.save(contentBlock);
@@ -81,6 +82,9 @@ public class BlockServiceImpl implements BlockService {
   public Block updateContentBlock(Long contentId, Long blockId,
       UpdateBlockRequest updateContentBlockRequest) {
     Block contentBlock = checkAuthorizeContent(contentId, blockId);
+    if(updateContentBlockRequest.getTitle() != null) {
+      contentBlock.setTitle(updateContentBlockRequest.getTitle());
+    }
     if (updateContentBlockRequest.getIsFree() != null) {
       contentBlock.setIsFree(updateContentBlockRequest.getIsFree());
     }

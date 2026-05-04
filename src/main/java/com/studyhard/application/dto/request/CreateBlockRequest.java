@@ -23,6 +23,8 @@ public class CreateBlockRequest {
   String textContent;
   @NotNull(message = "{block.type.notnull}")
   BlockType type;
+  @NotNull
+  String title;
   String properties;
   @NotNull(message = "{block.position.notNull}")
   @Min(value = 1,message = "{block.position.min")

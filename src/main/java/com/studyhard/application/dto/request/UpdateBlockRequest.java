@@ -19,5 +19,6 @@ public class UpdateBlockRequest {
   BlockType type;
   String textContent;
   String properties;
+  String title;
   Boolean isFree;
 }
