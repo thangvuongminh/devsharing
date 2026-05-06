@@ -123,27 +123,15 @@ public class WalletServiceImpl implements WalletService {
   }
 
   @Override
-  public void addCredit(Long userId, BigDecimal amount, TransactionType type, String description,
+  @Transactional
+  public void addCredit(Long userId, BigDecimal amount, String description,
       String referenceId) {
     User user1=userRepository.findById(userId).get();
     Wallet wallet=walletRepository.findByUserIdWithLock(user1).orElseThrow(() -> new StudyHardException(
         ExceptionEnum.WALLET_NOT_FOUND));
-    BigDecimal balanceBefore=wallet.getBalance();
     BigDecimal balanceAfter=wallet.getBalance().add(amount);
     wallet.setBalance(balanceAfter);
     wallet.setUpdatedAt(Instant.now());
     walletRepository.save(wallet);
-    User user=userRepository.findById(userId).get();
-    Transaction transaction=Transaction.builder()
-        .user(user)
-        .type(type)
-        .amount(amount.negate())
-        .balanceBefore(balanceBefore)
-        .balanceAfter(balanceAfter)
-        .createdAt(Instant.now())
-        .referenceId(referenceId)
-        .description(description)
-        .build();
-    transactionRepository.save(transaction);
   }
 }

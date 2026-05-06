@@ -102,3 +102,15 @@ cloudinary:
     cloud_name: ${CLOUDINARY}
     api_key: ${API_KEY_CLOUDINARY}
     api_secret: ${API_SECRET_CLOUDINARY}
+vnpay:
+  vnp_Version: 2.1.0
+  vnp_Command: pay
+  vnp_TmnCode: ${VNP_TMCODE}
+  vnp_CurrCode: VND
+  vnp_Locale: vn
+  vnpOrderType: education
+  vnp_SecureHash: ${VNP_SECUREHASH}
+  vnpPayUrl:  https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  vnpReturnUrl: http:localhost:8080/payment/results
+  expireTime: 300
+

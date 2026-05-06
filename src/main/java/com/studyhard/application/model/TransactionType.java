@@ -7,5 +7,6 @@ public enum TransactionType {
   EARNING, // creator  receive payment from  the buyer
   WITHDRAW, // creator  withdraw money
   REFUND,
-  PENDING_DEPOSIT
+  PENDING_DEPOSIT,
+  PENDING_PAYMENT,
 }

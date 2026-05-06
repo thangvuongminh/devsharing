@@ -22,6 +22,6 @@ public interface WalletService {
   public void deductCredit(User user, BigDecimal amount, TransactionType type, String description,
       String referenceId);
 
-  public void addCredit(Long userId, BigDecimal amount, TransactionType type, String description,
+  public void addCredit(Long userId, BigDecimal amount,  String description,
       String referenceId);
 }

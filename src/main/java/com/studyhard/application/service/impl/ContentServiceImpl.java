@@ -34,6 +34,7 @@ import com.studyhard.application.repository.WalletRepository;
 import com.studyhard.application.service.CategoryService;
 import com.studyhard.application.service.ContentService;
 import com.studyhard.application.service.FileStorageService;
+import com.studyhard.application.service.PaymentService;
 import com.studyhard.application.service.WalletService;
 import com.studyhard.application.specification.ContentPreSpecification;
 import com.studyhard.application.utils.UserExtractor;
@@ -84,6 +85,7 @@ public class ContentServiceImpl implements ContentService {
   WalletService walletService;
   PurchaseContentRepository purchaseContentRepository;
   TransactionRepository transactionRepository;
+  PaymentService paymentService;
   @Override
   @Transactional
   public ContentDto createContent(CreateContentRequest createContentRequest) {

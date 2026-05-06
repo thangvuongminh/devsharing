@@ -99,7 +99,12 @@ public enum ExceptionEnum implements StudyHardExceptionInfo {
   // role
 
   ROLE_NOT_FOUND("ROLE_NOT_FOUND", "System role configuration error. Please contact administrator.",
-      HttpStatus.INTERNAL_SERVER_ERROR);
+      HttpStatus.INTERNAL_SERVER_ERROR),
+
+  // transaction
+  TRANSACTION_NOT_FOUND("TRANSACTION_NOT_FOUND", "Transaction not found", HttpStatus.NOT_FOUND),
+  // payment
+  DEPOSIT_ERROR("DEPOSIT_ERROR","Deposit unsuccessful",HttpStatus.BAD_REQUEST),;
   String errorCode;
   String errorMessage;
   HttpStatus httpStatus;

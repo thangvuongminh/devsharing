@@ -14,4 +14,13 @@ public class RandomOtp {
     }
     return otp;
   }
+  public Long generateTxnRef() {
+    Random random = new Random();
+    Long txRef=    random.nextLong(9);
+    for (int i=0; i<16; i++) {
+      txRef*=10;
+      txRef+=random.nextInt(10);
+    }
+    return txRef;
+  }
 }

@@ -1,5 +1,6 @@
 package com.studyhard.application;
 
+import com.studyhard.application.config.properties.VnPayProperties;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -15,10 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableAsync
 @EnableCaching
 @EnableMongoRepositories(basePackages = "com.studyhard.application.mongo.repository")
-public class StudyHardApplication   {
-  ChatClient chatClient;
+public class StudyHardApplication    {
   public static void main(String[] args) {
     SpringApplication.run(StudyHardApplication.class, args);
   }
-
 }

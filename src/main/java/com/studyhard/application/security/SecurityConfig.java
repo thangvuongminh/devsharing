@@ -65,6 +65,8 @@ public class SecurityConfig {
             (authorize) -> authorize.requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
                 .permitAll()
                 // user account
+                .requestMatchers("/api/v1/vnpay/ipn").permitAll()
+                .requestMatchers("/payment").permitAll()
                 .requestMatchers("/profile/nickname/*").permitAll()
                 .requestMatchers("/contents/*/detail").permitAll()
                 .requestMatchers("/contents/add/cart").permitAll()
